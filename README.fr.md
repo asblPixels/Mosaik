@@ -30,7 +30,7 @@
 
 ## 📖 À propos
 
-**Mosaïk** est un logiciel libre de récupération de fichiers pour Linux. Il retrouve les photos, documents, musiques et vidéos effacés ou perdus sur un disque dur, un SSD, une clé USB ou une carte mémoire, **même quand ils sont éparpillés en plusieurs morceaux** sur le disque.
+**Mosaïk** est un logiciel libre de récupération de fichiers pour Linux. Il retrouve les photos, documents, musiques et vidéos effacés ou perdus sur un disque dur, un SSD, une clé USB ou une carte mémoire, **même lorsqu'ils sont fragmentés**, c'est-à-dire stockés en plusieurs fragments non contigus sur le support.
 
 Pendant l'analyse, le disque s'affiche comme une **mosaïque** qui se colore au fur et à mesure : on voit où sont les images, les documents, les zones vides, les zones abîmées et les fichiers recollés. Les fichiers retrouvés apparaissent en direct, avec un aperçu des photos.
 
@@ -44,7 +44,7 @@ Mosaïk veut être **l'outil le plus simple possible** :
 
 - 🖱️ **Trois questions, un bouton** : quel disque ? quoi chercher ? où ranger ? → *Lancer la récupération*.
 - 👀 **On voit tout** : la mosaïque du disque, la progression, les photos qui reviennent une à une.
-- 🧩 **Les morceaux sont recollés** et le recollage est vérifié.
+- 🧩 **Les fichiers fragmentés sont réassemblés** et chaque reconstruction est validée (CRC, structure du format).
 - 🐧 **Partout** : Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void… Python 3 suffit.
 
 ### 🆘 Pour qui ?
@@ -249,7 +249,7 @@ mosaik-20261116-220315/
 | État | Signification |
 |---|---|
 | **complet** | Fichier retrouvé en un seul morceau |
-| **reconstruit** | Fichier fragmenté, morceaux recollés et vérifiés |
+| **reconstruit** | Fichier fragmenté, fragments réassemblés et validés |
 | **partiel** | Une partie manque ; le début est souvent utilisable |
 
 ### Réglages avancés

@@ -30,7 +30,7 @@
 
 ## 📖 About
 
-**Mosaïk** is a free, open-source file recovery tool for Linux. It brings back deleted or lost photos, documents, music and videos from hard drives, SSDs, USB sticks and memory cards — **even when they are scattered in several pieces** across the disk.
+**Mosaïk** is a free, open-source file recovery tool for Linux. It brings back deleted or lost photos, documents, music and videos from hard drives, SSDs, USB sticks and memory cards — **even when they are fragmented**, i.e. stored as several non-contiguous fragments on the medium.
 
 While scanning, the disk is drawn as a **mosaic** that lights up as it goes: you can see where the images, documents, empty areas, damaged sectors and re-assembled files are. Recovered files appear live, with photo previews.
 
@@ -44,7 +44,7 @@ Mosaïk aims to be **the simplest possible tool**:
 
 - 🖱️ **Three questions, one button**: which disk? what to look for? where to save? → *Start recovery*.
 - 👀 **See everything**: the disk mosaic, the progress, photos coming back one by one.
-- 🧩 **Pieces are put back together** — and the result is verified.
+- 🧩 **Fragmented files are re-assembled** and every reconstruction is validated (CRC, format structure).
 - 🐧 **Runs everywhere**: Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void… Python 3 is all it needs.
 
 ### 🆘 Who is it for?
@@ -251,7 +251,7 @@ mosaik-20261116-220315/
 | Status | Meaning |
 |---|---|
 | **complet** | Found in one piece |
-| **reconstruit** | Fragmented file, pieces re-assembled and verified |
+| **reconstruit** | Fragmented file, fragments re-assembled and validated |
 | **partiel** | Part is missing; the beginning is often usable |
 
 ### Advanced settings
