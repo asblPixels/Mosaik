@@ -34,7 +34,7 @@
 
 While scanning, the disk is drawn as a **mosaic** that lights up as it goes: you can see where the images, documents, empty areas, damaged sectors and re-assembled files are. Recovered files appear live, with photo previews.
 
-> **Origin**: This project is created and maintained by **[asblPixels](https://github.com/asblPixels)** as part of its open-source software initiative. It is released under the MIT License and is free to use, modify and distribute.
+> **Origin**: This project is created and maintained by **[asblPixels](https://github.com/asblPixels)** as part of its open-source software initiative, based on an idea by **Mr Stéphane Quain**, who took part in the project and leads its beta testing. It is released under the MIT License and is free to use, modify and distribute.
 
 ### ✨ Why Mosaïk?
 
@@ -382,6 +382,13 @@ This project builds on the remarkable work of:
 ## 👨‍💻 Creators
 
 **Mosaïk** is created and maintained by **[asblPixels](https://github.com/asblPixels)** as part of its open-source software initiative.
+
+| Role | Person |
+|---|---|
+| 💡 Original idea | **Mr Stéphane Quain** |
+| 🤝 Project participation | **Mr Stéphane Quain** |
+| 🧪 Beta testing | **Mr Stéphane Quain** |
+| 🛠️ Development and maintenance | [asblPixels](https://github.com/asblPixels) |
 
 Contributions, bug reports and feature requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 

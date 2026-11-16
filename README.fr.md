@@ -34,7 +34,7 @@
 
 Pendant l'analyse, le disque s'affiche comme une **mosaïque** qui se colore au fur et à mesure : on voit où sont les images, les documents, les zones vides, les zones abîmées et les fichiers recollés. Les fichiers retrouvés apparaissent en direct, avec un aperçu des photos.
 
-> **Origine** : ce projet est créé et maintenu par **[asblPixels](https://github.com/asblPixels)**, dans le cadre de son initiative de logiciels libres. Il est publié sous licence MIT : libre d'utilisation, de modification et de diffusion.
+> **Origine** : ce projet est créé et maintenu par **[asblPixels](https://github.com/asblPixels)**, dans le cadre de son initiative de logiciels libres, sur une idée de **M. Stéphane Quain**, qui a participé au projet et en assure le bêta-test. Il est publié sous licence MIT : libre d'utilisation, de modification et de diffusion.
 
 ### ✨ Pourquoi Mosaïk ?
 
@@ -380,6 +380,13 @@ Ce projet s'appuie sur le travail remarquable de :
 ## 👨‍💻 Créateurs
 
 **Mosaïk** est créé et maintenu par **[asblPixels](https://github.com/asblPixels)** dans le cadre de son initiative de logiciels libres.
+
+| Rôle | Personne |
+|---|---|
+| 💡 Idée originale | **M. Stéphane Quain** |
+| 🤝 Participation au projet | **M. Stéphane Quain** |
+| 🧪 Bêta-test | **M. Stéphane Quain** |
+| 🛠️ Développement et maintenance | [asblPixels](https://github.com/asblPixels) |
 
 Contributions, signalements de bugs et idées sont les bienvenus : voir [CONTRIBUTING.md](CONTRIBUTING.md).
 
