@@ -9,7 +9,8 @@
 **Un récupérateur de données visuel, simple et libre, pour Linux (toutes distributions) et Windows**
 
 [![Licence : MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-26EFC5.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-26EFC5.svg)](CHANGELOG.md)
+[![En ligne](https://img.shields.io/badge/en%20ligne-sans%20installation-26EFC5.svg)](https://asblpixels.github.io/Mosaik/)
 [![Plateforme](https://img.shields.io/badge/plateforme-Linux%20%26%20Windows-blue.svg)](#️-systèmes-compatibles)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Dépendances](https://img.shields.io/badge/d%C3%A9pendances-aucune-brightgreen.svg)](#️-systèmes-compatibles)
@@ -20,6 +21,10 @@
 <br>
 
 [🇬🇧 English](README.md) · [🇫🇷 Français](README.fr.md)
+
+<br>
+
+### [▶ Utiliser Mosaïk en ligne, sans rien installer](https://asblpixels.github.io/Mosaik/)
 
 <br>
 
@@ -36,6 +41,21 @@
 Pendant l'analyse, le disque s'affiche comme une **mosaïque** qui se colore au fur et à mesure : on voit où sont les images, les documents, les zones vides, les zones abîmées et les fichiers recollés. Les fichiers retrouvés apparaissent en direct, avec un aperçu des photos.
 
 > **Origine** : ce projet est créé et maintenu par **[asblPixels](https://github.com/asblPixels)**, dans le cadre de son initiative de logiciels libres, sur une idée de **M. Stéphane Quain**, qui a participé au projet et en assure le bêta-test. Il est publié sous licence MIT : libre d'utilisation, de modification et de diffusion.
+
+### 🌐 Version en ligne (2.1)
+
+Mosaïk s'utilise aussi **directement dans le navigateur**, sans téléchargement : **[https://asblpixels.github.io/Mosaik/](https://asblpixels.github.io/Mosaik/)**
+
+- 💽 Analyse une **image disque** (.img, .dd, .raw, .iso…) avec **le même moteur** que la version installée : recherche par signature, recollage des fichiers fragmentés, mosaïque, aperçus.
+- 🔒 **Rien n'est envoyé sur internet** : le moteur Python tourne dans votre navigateur (WebAssembly, Pyodide intégré au site, aucun service tiers).
+- ⬇️ Chaque fichier retrouvé se télécharge d'un clic, ou tout d'un coup en **.zip** avec le rapport.
+- 💻 Fonctionne sur Windows, macOS, Linux, ChromeOS, dans Firefox, Chrome, Edge et Safari récents.
+
+> ⚠️ **Limite des navigateurs** : pour des raisons de sécurité, aucun site web ne peut lire directement un disque, une clé USB ou une carte SD. Pour analyser un support branché, **installez Mosaïk** (Windows ou Linux), ou créez d'abord une image du support. The Sleuth Kit (noms d'origine) et le mode « disque abîmé » sont réservés à la version installée.
+
+| Version en ligne | Version installée |
+|---|---|
+| <img src="docs/screenshot-web-accueil.png" width="440" alt="Mosaïk en ligne : dépôt d'une image disque"> | <img src="docs/screenshot-analyse.png" width="440" alt="Mosaïk installé : analyse d'un disque"> |
 
 ### 🆕 Nouveautés de la version 2.0 — mise à jour majeure
 
@@ -321,12 +341,13 @@ Mosaik/
 ├── scripts/
 │   ├── install-linux.sh      # Installation en une ligne (toutes distributions)
 │   └── install-windows.bat   # Installation Windows (double-clic) + .ps1
+├── web/                      # Version en ligne : pont navigateur (web.js) et moteur en Web Worker
+├── docs/                     # Site publié par GitHub Pages (généré par tools/build_web.py) + captures
 ├── packaging/
 │   └── mosaik.desktop        # Entrée du menu des applications
 ├── assets/                   # Logo, icônes (SVG + PNG 16→512), aperçu social
 ├── assets/fonts/             # Police Poppins intégrée (SIL OFL 1.1)
 ├── tools/brand.py            # Génère logo et icônes (couleurs Pixel's, Poppins)
-├── docs/                     # Captures d'écran
 ├── tests/
 │   └── test_recuperation.py  # Image disque de test avec fichiers fragmentés
 ├── .github/                  # CI, modèles de tickets

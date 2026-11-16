@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-16 — Online version
+
+### Added
+- **Mosaïk online** (GitHub Pages, `docs/`): the same engine (`mosaik.py`) and interface (`ui.html`) run in the browser through Pyodide (Python in WebAssembly) inside a Web Worker. Disk images are read locally (WORKERFS), nothing is uploaded; recovered files are downloaded one by one or as a ZIP built in the browser. Pyodide is bundled with the site (no CDN).
+- `tools/build_web.py` builds the site; `web/web.js` replaces the local server API, `web/worker.mjs` runs the engine.
+
+### Changed
+- Engine: works without threads or `os.pread` (browser), progress and per-file hooks.
+- Interface: relative asset paths, image drop zone and download buttons in online mode.
+
 ## [2.0.0] - 2026-11-16 — Major update: speed and Windows port
 
 ### Added

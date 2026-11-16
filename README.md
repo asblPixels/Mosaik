@@ -9,7 +9,8 @@
 **A simple, visual, open-source data recovery tool for Linux (any distribution) and Windows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-26EFC5.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-26EFC5.svg)](CHANGELOG.md)
+[![Online](https://img.shields.io/badge/online-no%20install-26EFC5.svg)](https://asblpixels.github.io/Mosaik/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%26%20Windows-blue.svg)](#️-supported-systems)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#️-supported-systems)
@@ -20,6 +21,10 @@
 <br>
 
 [🇬🇧 English](README.md) · [🇫🇷 Français](README.fr.md)
+
+<br>
+
+### [▶ Use Mosaïk online — nothing to install](https://asblpixels.github.io/Mosaik/)
 
 <br>
 
@@ -36,6 +41,17 @@
 While scanning, the disk is drawn as a **mosaic** that lights up as it goes: you can see where the images, documents, empty areas, damaged sectors and re-assembled files are. Recovered files appear live, with photo previews.
 
 > **Origin**: This project is created and maintained by **[asblPixels](https://github.com/asblPixels)** as part of its open-source software initiative, based on an idea by **Mr Stéphane Quain**, who took part in the project and leads its beta testing. It is released under the MIT License and is free to use, modify and distribute.
+
+### 🌐 Online version (2.1)
+
+Mosaïk also runs **directly in your browser**, no download needed: **[https://asblpixels.github.io/Mosaik/](https://asblpixels.github.io/Mosaik/)**
+
+- 💽 Scans a **disk image** (.img, .dd, .raw, .iso…) with **the same engine** as the installed version: signature carving, fragmented-file re-assembly, mosaic, previews.
+- 🔒 **Nothing is uploaded**: the Python engine runs inside your browser (WebAssembly, Pyodide bundled with the site, no third-party service).
+- ⬇️ Download each recovered file with one click, or everything as a **.zip** with the report.
+- 💻 Works on Windows, macOS, Linux and ChromeOS, in recent Firefox, Chrome, Edge and Safari.
+
+> ⚠️ **Browser limitation**: for security reasons, no website can read a disk, USB stick or SD card directly. To scan a plugged-in device, **install Mosaïk** (Windows or Linux) or create an image of the device first. The Sleuth Kit (original names) and "failing drive" mode require the installed version.
 
 ### 🆕 What's new in 2.0 — major update
 
@@ -323,12 +339,13 @@ Mosaik/
 ├── scripts/
 │   ├── install-linux.sh      # One-line installer (all distributions)
 │   └── install-windows.bat   # Windows installer (double-click) + .ps1
+├── web/                      # Online version: browser bridge (web.js) and Web Worker engine
+├── docs/                     # Site published by GitHub Pages (built by tools/build_web.py) + screenshots
 ├── packaging/
 │   └── mosaik.desktop        # Applications menu entry
 ├── assets/                   # Logo, icons (SVG + PNG 16→512), social preview
 ├── assets/fonts/             # Bundled Poppins font (SIL OFL 1.1)
 ├── tools/brand.py            # Generates logo and icons (Pixel's colours, Poppins)
-├── docs/                     # Screenshots
 ├── tests/
 │   └── test_recuperation.py  # Test disk image with fragmented files
 ├── .github/                  # CI, issue templates
