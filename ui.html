@@ -6,6 +6,10 @@
 <title>Mosaïk — récupération de fichiers</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
+@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:block}
 :root{
   --bg:#000000; --panel:#0a1110; --panel2:#111b19; --line:#1d2c29; --text:#ffffff; --muted:#93a8a3;
   --teal:#26efc5; --orange:#fb923c; --red:#f43f5e; --blue:#60a5fa; --yellow:#facc15;
@@ -13,11 +17,11 @@
   --c0:#121c1a; --c1:#17302b; --c2:#2b4f47;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Poppins,Inter,"Noto Sans",Ubuntu,Cantarell,system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Mosaik Poppins",Poppins,sans-serif}
 header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);background:#000}
 header img{width:44px;height:44px}
-header h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}header h1 span{color:var(--teal);text-shadow:0 0 12px rgba(38,239,197,.55)}
-header p{margin:0;color:var(--muted);font-size:13px}
+header h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.2}header h1 span{color:var(--teal);text-shadow:0 0 12px rgba(38,239,197,.55)}
+header p{margin:0;color:var(--muted);font-size:13px;font-weight:300}
 header .sp{flex:1}
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .badge.ok{color:var(--teal);border-color:#1f5f58}

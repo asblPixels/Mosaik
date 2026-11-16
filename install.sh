@@ -6,9 +6,10 @@ command -v python3 >/dev/null 2>&1 || { echo "Python 3 est requis (paquet python
 SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="$HOME/.local/share/mosaik"
 BIN="$HOME/.local/bin"
-mkdir -p "$DEST/assets" "$BIN" "$HOME/.local/share/applications"
+mkdir -p "$DEST/assets/fonts" "$BIN" "$HOME/.local/share/applications"
 cp "$SRC/mosaik.py" "$SRC/ui.html" "$DEST/"
 cp "$SRC/assets/"*.svg "$SRC/assets/"*.png "$DEST/assets/"
+cp "$SRC/assets/fonts/"* "$DEST/assets/fonts/"
 chmod +x "$DEST/mosaik.py"
 ln -sf "$DEST/mosaik.py" "$BIN/mosaik"
 for s in 16 32 48 64 128 256 512; do

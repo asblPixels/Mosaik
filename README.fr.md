@@ -303,6 +303,7 @@ Mosaik/
 ├── packaging/
 │   └── mosaik.desktop        # Entrée du menu des applications
 ├── assets/                   # Logo, icônes (SVG + PNG 16→512), aperçu social
+├── assets/fonts/             # Police Poppins intégrée (SIL OFL 1.1)
 ├── tools/brand.py            # Génère logo et icônes (couleurs Pixel's, Poppins)
 ├── docs/                     # Captures d'écran
 ├── tests/
@@ -384,7 +385,7 @@ Contributions, signalements de bugs et idées sont les bienvenus : voir [CONTRIB
 
 ## 📜 Licence
 
-Ce projet est sous licence **MIT** : voir [LICENSE](LICENSE). The Sleuth Kit est un projet distinct (licences IBM Public License / CPL / GPL selon les modules), utilisé uniquement s'il est installé.
+Ce projet est sous licence **MIT** : voir [LICENSE](LICENSE). The Sleuth Kit est un projet distinct (licences IBM Public License / CPL / GPL selon les modules), utilisé uniquement s'il est installé. La police [Poppins](https://github.com/itfoundry/Poppins) est intégrée sous licence SIL Open Font License 1.1 ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)).
 
 ## ⚠️ Avertissement légal
 

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - New visual identity in Pixel's ASBL colours (black, white, turquoise #26EFC5) with Poppins typography; text outlined in SVGs (`tools/brand.py`).
+- Poppins font bundled (WOFF2, SIL OFL 1.1) and served locally, so the interface title matches the logo even when Poppins is not installed.
 - Vendor IDs such as `0x1af4` are no longer shown as disk names.
 - After a scan, reopening the interface shows the results instead of the setup screen.
 

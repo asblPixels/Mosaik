@@ -305,6 +305,7 @@ Mosaik/
 ├── packaging/
 │   └── mosaik.desktop        # Applications menu entry
 ├── assets/                   # Logo, icons (SVG + PNG 16→512), social preview
+├── assets/fonts/             # Bundled Poppins font (SIL OFL 1.1)
 ├── tools/brand.py            # Generates logo and icons (Pixel's colours, Poppins)
 ├── docs/                     # Screenshots
 ├── tests/
@@ -386,7 +387,7 @@ Contributions, bug reports and feature requests are welcome — see [CONTRIBUTIN
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE). The Sleuth Kit is a separate project (IBM Public License / CPL / GPL depending on modules), used only if installed.
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE). The Sleuth Kit is a separate project (IBM Public License / CPL / GPL depending on modules), used only if installed. The [Poppins](https://github.com/itfoundry/Poppins) font is bundled under the SIL Open Font License 1.1 ([assets/fonts/OFL.txt](assets/fonts/OFL.txt)).
 
 ## ⚠️ Legal note
 

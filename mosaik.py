@@ -1453,7 +1453,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        if "Cache-Control" not in (extra or {}):
+            self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         for k, v in (extra or {}).items():
@@ -1477,6 +1478,13 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send(200, f.read(), "image/svg+xml")
             except OSError:
                 return self._send(404, b"")
+        m = re.match(r"^/fonts/(Poppins-(?:Light|Regular|Medium|Bold)\.woff2)$", u.path)
+        if m:
+            try:
+                with open(os.path.join(HERE, "assets", "fonts", m.group(1)), "rb") as f:
+                    return self._send(200, f.read(), "font/woff2", {"Cache-Control": "max-age=86400"})
+            except OSError:
+                return self._send(404, b"")
         if not self._authorized(q):
             return self._send(403, "Accès refusé : ouvrez Mosaïk via le lien affiché au démarrage.",
                               "text/plain; charset=utf-8")
@@ -1484,7 +1492,7 @@ class Handler(BaseHTTPRequestHandler):
             with open(os.path.join(HERE, "ui.html"), "r", encoding="utf-8") as f:
                 html = f.read().replace("__TOKEN__", TOKEN).replace("__VERSION__", VERSION)
             return self._send(200, html, "text/html; charset=utf-8",
-                              {"Content-Security-Policy": "default-src 'self'; img-src 'self' blob:; "
+                              {"Content-Security-Policy": "default-src 'self'; img-src 'self' blob:; font-src 'self'; "
                                "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"})
         if u.path == "/api/info":
             return self._send(200, {"version": VERSION, "root": os.geteuid() == 0,

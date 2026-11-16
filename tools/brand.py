@@ -7,7 +7,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
 TURQ, WHITE, BLACK = "#26EFC5", "#FFFFFF", "#000000"
-FONTS = "/usr/share/fonts/truetype/google-fonts/"
+FONTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "fonts") + os.sep
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
 
@@ -70,8 +70,8 @@ def icon():
 
 def wordmark(x, y, size):
     """« Mosa » en blanc + « ïk » en turquoise néon. Renvoie (svg, largeur)."""
-    p1, w1 = text_path("Mosa", "Poppins-Bold.ttf", size, x, y, track=-size * 0.01)
-    p2, w2 = text_path("ïk", "Poppins-Bold.ttf", size, x + w1 + size * 0.005, y, track=-size * 0.01)
+    p1, w1 = text_path("Mosa", "Poppins-Bold.woff2", size, x, y, track=-size * 0.01)
+    p2, w2 = text_path("ïk", "Poppins-Bold.woff2", size, x + w1 + size * 0.005, y, track=-size * 0.01)
     svg = (f'<path d="{p1}" fill="{WHITE}"/>'
            f'<path d="{p2}" fill="{TURQ}" filter="url(#neon)"/>')
     return svg, w1 + w2
@@ -80,8 +80,8 @@ def wordmark(x, y, size):
 def logo():
     W, H = 1200, 360
     mark, w = wordmark(400, 200, 140)
-    tag, _ = text_path("Récupérez vos fichiers, même en morceaux.", "Poppins-Light.ttf", 34, 404, 262)
-    sub, _ = text_path("PIXEL'S ASBL  ·  LOGICIEL LIBRE  ·  LINUX", "Poppins-Medium.ttf", 21, 406, 314, track=2.2)
+    tag, _ = text_path("Récupérez vos fichiers, même en morceaux.", "Poppins-Light.woff2", 34, 404, 262)
+    sub, _ = text_path("PIXEL'S ASBL  ·  LOGICIEL LIBRE  ·  LINUX", "Poppins-Medium.woff2", 21, 406, 314, track=2.2)
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
   {DEFS}
   <rect width="{W}" height="{H}" rx="40" fill="{BLACK}"/>
@@ -97,10 +97,10 @@ def social():
     grid = "".join(f'<rect x="{x}" y="{y}" width="34" height="34" rx="7" fill="{TURQ}"/>'
                    for x in range(0, W, 44) for y in range(0, H, 44) if (x * 7 + y * 3) % 5 == 0)
     mark, _ = wordmark(520, 290, 150)
-    tag, _ = text_path("Récupérez vos fichiers, même en morceaux.", "Poppins-Light.ttf", 31, 527, 356)
-    l1, _ = text_path("Recollage des fragments  ·  The Sleuth Kit  ·  Disques abîmés", "Poppins-Regular.ttf", 23, 527, 430)
-    l2, _ = text_path("Toutes distributions Linux  ·  Logiciel libre", "Poppins-Regular.ttf", 23, 527, 468)
-    l3, _ = text_path("PIXEL'S ASBL", "Poppins-Medium.ttf", 22, 527, 548, track=3)
+    tag, _ = text_path("Récupérez vos fichiers, même en morceaux.", "Poppins-Light.woff2", 31, 527, 356)
+    l1, _ = text_path("Recollage des fragments  ·  The Sleuth Kit  ·  Disques abîmés", "Poppins-Regular.woff2", 23, 527, 430)
+    l2, _ = text_path("Toutes distributions Linux  ·  Logiciel libre", "Poppins-Regular.woff2", 23, 527, 468)
+    l3, _ = text_path("PIXEL'S ASBL", "Poppins-Medium.woff2", 22, 527, 548, track=3)
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">
   {DEFS}
   <rect width="{W}" height="{H}" fill="{BLACK}"/>
