@@ -3,6 +3,9 @@
 lance Mosaïk en mode texte et vérifie que les fichiers sont identiques."""
 import hashlib, io, os, random, subprocess, sys, tempfile, zipfile, shutil
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 random.seed(42)
 CS = 4096
 HERE = os.path.dirname(os.path.realpath(__file__))

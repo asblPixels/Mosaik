@@ -1902,6 +1902,11 @@ def main():
 
     if sys.stdout is None:                     # pythonw (Windows) : pas de console
         sys.stdout = sys.stderr = open(os.devnull, "w")
+    elif hasattr(sys.stdout, "reconfigure"):   # console Windows (cp1252) : pas de plantage sur les accents
+        try:
+            sys.stdout.reconfigure(errors="replace")
+        except Exception:
+            pass
     if sys.version_info < (3, 8):
         sys.exit("Python 3.8 ou plus récent est nécessaire.")
     if args.cli:
