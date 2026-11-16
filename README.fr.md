@@ -303,6 +303,7 @@ Mosaik/
 ├── packaging/
 │   └── mosaik.desktop        # Entrée du menu des applications
 ├── assets/                   # Logo, icônes (SVG + PNG 16→512), aperçu social
+├── tools/brand.py            # Génère logo et icônes (couleurs Pixel's, Poppins)
 ├── docs/                     # Captures d'écran
 ├── tests/
 │   └── test_recuperation.py  # Image disque de test avec fichiers fragmentés

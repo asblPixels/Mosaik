@@ -7,16 +7,16 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
 :root{
-  --bg:#0f1720; --panel:#16212d; --panel2:#1c2a38; --line:#26384a; --text:#e8eef4; --muted:#8fa3b6;
-  --teal:#2dd4bf; --orange:#fb923c; --red:#f43f5e; --blue:#60a5fa; --yellow:#facc15;
+  --bg:#000000; --panel:#0a1110; --panel2:#111b19; --line:#1d2c29; --text:#ffffff; --muted:#93a8a3;
+  --teal:#26efc5; --orange:#fb923c; --red:#f43f5e; --blue:#60a5fa; --yellow:#facc15;
   --green:#4ade80; --pink:#f472b6; --violet:#a78bfa;
-  --c0:#1f2d3b; --c1:#24364a; --c2:#3c5873;
+  --c0:#121c1a; --c1:#17302b; --c2:#2b4f47;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Ubuntu,Cantarell,"Noto Sans",sans-serif}
-header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#122030,#0f1720)}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Poppins,Inter,"Noto Sans",Ubuntu,Cantarell,system-ui,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);background:#000}
 header img{width:44px;height:44px}
-header h1{margin:0;font-size:22px;letter-spacing:.5px}
+header h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}header h1 span{color:var(--teal);text-shadow:0 0 12px rgba(38,239,197,.55)}
 header p{margin:0;color:var(--muted);font-size:13px}
 header .sp{flex:1}
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
@@ -25,22 +25,22 @@ header .sp{flex:1}
 main{max-width:1180px;margin:0 auto;padding:24px}
 .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px}
 .step h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:10px}
-.step h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--teal);color:#06302b;font-size:14px;font-weight:700}
+.step h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--teal);color:#00140f;font-size:14px;font-weight:700}
 .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
 .devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .dev{background:var(--panel2);border:2px solid transparent;border-radius:11px;padding:12px 14px;cursor:pointer;transition:.15s}
 .dev:hover{border-color:#2f4a63}
-.dev.sel{border-color:var(--teal);background:#173236}
+.dev.sel{border-color:var(--teal);background:#0b2a24}
 .dev .t{font-weight:600;display:flex;gap:8px;align-items:center}
 .dev .s{color:var(--muted);font-size:12.5px}
 .dev.part{margin-left:18px}
 .dev .warn{color:var(--orange);font-size:12px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-input[type=text],input[type=number]{background:#0d151d;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 12px;font:inherit;min-width:0}
+input[type=text],input[type=number]{background:#050a09;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 12px;font:inherit;min-width:0}
 input[type=text]{flex:1}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--panel2);padding:7px 13px;border-radius:999px;cursor:pointer;user-select:none;font-size:14px}
-.chip.on{background:#173236;border-color:var(--teal);color:#bff7ee}
+.chip.on{background:#0b2a24;border-color:var(--teal);color:#bff7ee}
 .presets{margin:0 0 10px}
 .presets button{background:none;border:none;color:var(--teal);cursor:pointer;font:inherit;font-size:13px;padding:0 10px 0 0}
 label.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:6px 0}
@@ -49,7 +49,7 @@ details{margin-top:10px;color:var(--muted)}
 details summary{cursor:pointer;font-size:13px}
 details .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:10px}
 details .grid label{font-size:13px;display:flex;flex-direction:column;gap:4px}
-.btn{background:var(--teal);color:#05312b;border:none;border-radius:11px;padding:13px 26px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn{background:var(--teal);color:#00140f;border:none;border-radius:11px;padding:13px 26px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:500;font-size:14px;padding:9px 16px}
 .btn.stop{background:var(--red);color:#fff;font-size:14px;padding:9px 18px}
@@ -64,11 +64,11 @@ canvas{width:100%;display:block;border-radius:8px;image-rendering:pixelated;curs
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .big{font-size:34px;font-weight:700;line-height:1.1}
-.bar{height:10px;border-radius:99px;background:#0d151d;overflow:hidden;margin:10px 0 6px}
-.bar div{height:100%;width:0;background:linear-gradient(90deg,var(--teal),#34d399);transition:width .4s}
+.bar{height:10px;border-radius:99px;background:#050a09;overflow:hidden;margin:10px 0 6px}
+.bar div{height:100%;width:0;background:linear-gradient(90deg,#1bbf9c,var(--teal));transition:width .4s}
 .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--muted)}
 .kv b{color:var(--text);font-weight:600}
-.phase{display:inline-block;padding:3px 10px;border-radius:99px;background:#173236;color:var(--teal);font-size:12.5px;font-weight:600}
+.phase{display:inline-block;padding:3px 10px;border-radius:99px;background:#0b2a24;color:var(--teal);font-size:12.5px;font-weight:600}
 .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .cats span{background:var(--panel2);padding:4px 10px;border-radius:8px;font-size:13px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
@@ -77,7 +77,7 @@ canvas{width:100%;display:block;border-radius:8px;image-rendering:pixelated;curs
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:560px;overflow:auto;padding-right:4px}
 .f{background:var(--panel2);border-radius:10px;overflow:hidden;font-size:12px;border:1px solid transparent}
 .f:hover{border-color:var(--teal)}
-.f .th{height:110px;display:grid;place-items:center;background:#0d151d;font-size:30px;font-weight:700;color:#3d5a75;overflow:hidden}
+.f .th{height:110px;display:grid;place-items:center;background:#050a09;font-size:30px;font-weight:700;color:#1f6b5c;overflow:hidden}
 .f .th img{width:100%;height:100%;object-fit:cover}
 .f .m{padding:7px 9px}
 .f .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
@@ -86,7 +86,7 @@ canvas{width:100%;display:block;border-radius:8px;image-rendering:pixelated;curs
 .st.reconstruit{background:#3b2a12;color:var(--orange)}
 .st.partiel{background:#3a1621;color:#fda4af}
 .log{font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;color:var(--muted);max-height:180px;overflow:auto;white-space:pre-wrap}
-.path{font:13px ui-monospace,Menlo,Consolas,monospace;background:#0d151d;padding:8px 12px;border-radius:8px;word-break:break-all}
+.path{font:13px ui-monospace,Menlo,Consolas,monospace;background:#050a09;padding:8px 12px;border-radius:8px;word-break:break-all}
 .empty{color:var(--muted);text-align:center;padding:30px}
 #tip{position:fixed;pointer-events:none;background:#0b1118;border:1px solid var(--line);padding:5px 9px;border-radius:7px;font-size:12px;display:none;z-index:9}
 footer{color:var(--muted);font-size:12px;text-align:center;padding:20px}
@@ -97,7 +97,7 @@ footer a{color:var(--teal)}
 <header>
   <img src="/logo.svg" alt="">
   <div>
-    <h1>Mosaïk</h1>
+    <h1>Mosa<span>ïk</span></h1>
     <p>Récupérez vos fichiers, même quand le disque les a laissés en morceaux.</p>
   </div>
   <div class="sp"></div>
@@ -279,7 +279,7 @@ function showErr(m){ $("err").textContent = m; $("err").style.display = "block";
 
 /* ─── écran d'analyse ─── */
 let files = [], filter = "Tous", lastMap = "", hl = -1, timer = null;
-const COLORS = {"0":"#1f2d3b","1":"#24364a","2":"#3c5873","3":"#f43f5e","4":"#60a5fa","5":"#facc15","6":"#4ade80","7":"#f472b6","8":"#a78bfa","9":"#fb923c"};
+const COLORS = {"0":"#121c1a","1":"#17302b","2":"#2b4f47","3":"#f43f5e","4":"#60a5fa","5":"#facc15","6":"#4ade80","7":"#f472b6","8":"#a78bfa","9":"#fb923c"};
 const COLS = 60, ROWS = 40;
 
 function showRun(){
@@ -292,7 +292,7 @@ function showRun(){
 function drawMap(m){
   const cv = $("map"), cx = cv.getContext("2d");
   const w = cv.width / COLS, h = cv.height / ROWS;
-  cx.fillStyle = "#0d151d"; cx.fillRect(0,0,cv.width,cv.height);
+  cx.fillStyle = "#050a09"; cx.fillRect(0,0,cv.width,cv.height);
   for(let i=0;i<m.length;i++){
     const x = (i % COLS) * w, y = Math.floor(i / COLS) * h;
     cx.fillStyle = COLORS[m[i]] || "#333";

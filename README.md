@@ -305,6 +305,7 @@ Mosaik/
 ├── packaging/
 │   └── mosaik.desktop        # Applications menu entry
 ├── assets/                   # Logo, icons (SVG + PNG 16→512), social preview
+├── tools/brand.py            # Generates logo and icons (Pixel's colours, Poppins)
 ├── docs/                     # Screenshots
 ├── tests/
 │   └── test_recuperation.py  # Test disk image with fragmented files
