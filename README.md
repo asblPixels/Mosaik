@@ -24,7 +24,7 @@
 
 <br>
 
-### [▶ Use Mosaïk online — nothing to install](https://asblpixels.github.io/Mosaik/) · [⬇ Download for Windows (.exe)](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)
+### [⬇ Download for Windows (.exe)](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)
 
 <br>
 
