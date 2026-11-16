@@ -207,7 +207,7 @@ footer a{color:var(--teal)}
 </section>
 </main>
 <div id="tip"></div>
-<footer>Mosaïk — logiciel libre de <a href="https://www.asblpixels.be" target="_blank" rel="noopener">Pixel's ASBL</a>, Boussu (Belgique)</footer>
+<footer>Mosaïk — logiciel libre de <a href="https://www.asblpixels.be" target="_blank" rel="noopener">Pixel's ASBL</a></footer>
 
 <script>
 const TOKEN = "__TOKEN__";
@@ -240,7 +240,7 @@ async function init(){
   });
   loadDevices();
   const st = await api("/api/status");
-  if(st.running) showRun();
+  if(st.running || st.phase !== "attente") showRun();
 }
 
 async function loadDevices(){

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Mosaïk — récupérateur visuel de fichiers pour disques endommagés ou fragmentés.
-Pixel's ASBL — Boussu (Belgique) — https://www.asblpixels.be
+Pixel's ASBL — https://www.asblpixels.be
 
 Aucune dépendance : uniquement la bibliothèque standard de Python 3 (>= 3.8).
 Fonctionne sur toutes les distributions Linux. L'interface s'ouvre dans le
@@ -654,9 +654,12 @@ class Carvers:
                     err_lo = data_at + pos + len(piece)
                     break
                 pos += len(piece)
+                if d.eof and pos < csize:      # fin de flux prématurée = données étrangères
+                    err_lo = data_at + pos
+                    break
         p_err = lay.phys(min(err_lo, data_at + csize))
         p_start = lay.phys(data_at)
-        for c in reversed(self.gaps.boundaries(lay, max(p_start + 1, p_err - 32 * cs), p_err)):
+        for c in reversed(self.gaps.boundaries(lay, max(p_start + 1, p_err - 64 * cs), p_err)):
             lc = lay.logical_of_phys_in_last(c)
             first = lay.read(data_at, lc - data_at)
             dec = zlib.decompressobj(-15) if method == 8 else None
@@ -1079,7 +1082,8 @@ def list_devices():
                             "path": n.get("path") or "/dev/" + n["name"],
                             "name": n.get("name"), "type": n.get("type"),
                             "size": int(n.get("size") or 0),
-                            "model": ((n.get("vendor") or "").strip() + " " + (n.get("model") or "").strip()).strip()
+                            "model": " ".join(x for x in ((n.get("vendor") or "").strip(), (n.get("model") or "").strip())
+                                              if x and not re.match(r"^0x[0-9a-f]+$", x, re.I))
                                      or (parent or {}).get("model") or "",
                             "fs": n.get("fstype") or "", "label": n.get("label") or "",
                             "mount": n.get("mountpoint") or "",
