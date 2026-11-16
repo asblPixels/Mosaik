@@ -15,7 +15,6 @@
 [![GUI](https://img.shields.io/badge/GUI-web%20browser-teal.svg)](#-usage)
 [![The Sleuth Kit](https://img.shields.io/badge/forensics-The%20Sleuth%20Kit-orange.svg)](https://www.sleuthkit.org/)
 [![CI](https://github.com/asblPixels/Mosaik/actions/workflows/ci.yml/badge.svg)](https://github.com/asblPixels/Mosaik/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/tag/asblPixels/Mosaik.svg?label=version)](https://github.com/asblPixels/Mosaik/tags)
 
 <br>
 
