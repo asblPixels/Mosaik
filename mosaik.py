@@ -31,12 +31,13 @@ import webbrowser
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 APP = "Mosaïk"
 HERE = os.path.dirname(os.path.realpath(__file__))
 
 SECTOR = 512
 WINDOWS = os.name == "nt"
+WEB = sys.platform == "emscripten"      # version en ligne (Pyodide, dans le navigateur)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -59,8 +60,12 @@ _PREAD_LOCK = threading.Lock()
 def pread(fd, n, off):
     """Lecture à une position donnée. Sous Windows, les disques bruts exigent
     des lectures alignées sur le secteur : on aligne puis on découpe."""
-    if not WINDOWS:
+    if not WINDOWS and hasattr(os, "pread"):
         return os.pread(fd, n, off)
+    if not WINDOWS:
+        with _PREAD_LOCK:
+            os.lseek(fd, off, os.SEEK_SET)
+            return os.read(fd, n)
     a = off - (off % SECTOR)
     end = off + n
     b = end + (-end % SECTOR)
@@ -1289,6 +1294,8 @@ class Job:
         self.out_dir = ""
         self.log = []
         self.hashdb = set()
+        self.on_tick = None       # rappel de progression (version en ligne)
+        self.on_file = None       # rappel à chaque fichier récupéré (version en ligne)
 
     # ── mosaïque ──
     def mark(self, off, length, state):
@@ -1469,19 +1476,29 @@ def run_scan(cfg, job):
         pos = 0
         seen = set()
         # Lecture anticipée : le bloc suivant est lu pendant l'analyse du bloc courant
-        from concurrent.futures import ThreadPoolExecutor
-        pool = ThreadPoolExecutor(max_workers=1)
-
         def fetch(p):
             return src._raw(p, min(SCAN_CHUNK, src.size - p)) if p < src.size else b""
 
-        fut = pool.submit(fetch, 0)
+        class _Now:                          # navigateur : pas de fil d'exécution
+            def __init__(self, v): self.v = v
+            def result(self): return self.v
+
+        if WEB:
+            pool = None
+            submit = lambda p: _Now(fetch(p))
+        else:
+            from concurrent.futures import ThreadPoolExecutor
+            pool = ThreadPoolExecutor(max_workers=1)
+            submit = lambda p: pool.submit(fetch, p)
+        fut = submit(0)
         while pos < src.size and not job.stop_flag:
+            if job.on_tick:
+                job.on_tick()
             cur = fut.result()
             if not cur:
                 break
             main = len(cur)
-            fut = pool.submit(fetch, pos + main)
+            fut = submit(pos + main)
             if not cur.strip(b"\0"):          # zone vide : rien à chercher
                 job.mark(pos, main, C_EMPTY)
                 pos += main
@@ -1530,7 +1547,8 @@ def run_scan(cfg, job):
                 seen = set(x for x in seen if x >= pos)
             pos += main
             job.pos = pos
-        pool.shutdown(wait=True)
+        if pool:
+            pool.shutdown(wait=True)
         job.bad = max(job.bad, src.bad_sectors)
         src.close()
         write_report(out_root, job)
@@ -1541,7 +1559,7 @@ def run_scan(cfg, job):
         else:
             job.phase = "termine"
             job.pos = job.size
-            job.say("Terminé : %d fichier(s) récupéré(s) dans %s" % (len(job.files), out_root))
+            job.say("Terminé : %d fichier(s) récupéré(s)%s" % (len(job.files), "" if WEB else " dans " + out_root))
     except KeyboardInterrupt:
         job.phase = "arrete"
         chown_tree(out_root, owner)
@@ -1585,6 +1603,8 @@ def save_file(res, off, src, out_root, job):
         })
     if len(res.frags) > 1:
         job.say("Recollé : %s (%d fragments)" % (name, len(res.frags)))
+    if job.on_file:
+        job.on_file(job.files[-1])
 
 
 def write_report(out_root, job):

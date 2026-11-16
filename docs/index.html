@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaïk en ligne — récupération de fichiers</title>
+<meta name="description" content="Mosaïk : récupérez vos fichiers depuis une image disque, directement dans le navigateur. Recollage des fichiers fragmentés. Rien n'est envoyé sur internet.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:block}
+:root{
+  --bg:#000000; --panel:#0a1110; --panel2:#111b19; --line:#1d2c29; --text:#ffffff; --muted:#93a8a3;
+  --teal:#26efc5; --orange:#fb923c; --red:#f43f5e; --blue:#60a5fa; --yellow:#facc15;
+  --green:#4ade80; --pink:#f472b6; --violet:#a78bfa;
+  --c0:#121c1a; --c1:#17302b; --c2:#2b4f47;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Mosaik Poppins",Poppins,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);background:#000}
+header img{width:44px;height:44px}
+header h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.2}header h1 span{color:var(--teal);text-shadow:0 0 12px rgba(38,239,197,.55)}
+header p{margin:0;color:var(--muted);font-size:13px;font-weight:300}
+header .sp{flex:1}
+.badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.badge.ok{color:var(--teal);border-color:#1f5f58}
+.badge.warn{color:var(--orange);border-color:#7a4a22}
+main{max-width:1180px;margin:0 auto;padding:24px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+.step h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:10px}
+.step h2 .n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--teal);color:#00140f;font-size:14px;font-weight:700}
+.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+.devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.dev{background:var(--panel2);border:2px solid transparent;border-radius:11px;padding:12px 14px;cursor:pointer;transition:.15s}
+.dev:hover{border-color:#2f4a63}
+.dev.sel{border-color:var(--teal);background:#0b2a24}
+.dev .t{font-weight:600;display:flex;gap:8px;align-items:center}
+.dev .s{color:var(--muted);font-size:12.5px}
+.dev.part{margin-left:18px}
+.dev .warn{color:var(--orange);font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=text],input[type=number]{background:#050a09;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 12px;font:inherit;min-width:0}
+input[type=text]{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--panel2);padding:7px 13px;border-radius:999px;cursor:pointer;user-select:none;font-size:14px}
+.chip.on{background:#0b2a24;border-color:var(--teal);color:#bff7ee}
+.presets{margin:0 0 10px}
+.presets button{background:none;border:none;color:var(--teal);cursor:pointer;font:inherit;font-size:13px;padding:0 10px 0 0}
+label.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:6px 0}
+label.check input{margin-top:4px;accent-color:var(--teal);width:17px;height:17px}
+details{margin-top:10px;color:var(--muted)}
+details summary{cursor:pointer;font-size:13px}
+details .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:10px}
+details .grid label{font-size:13px;display:flex;flex-direction:column;gap:4px}
+.btn{background:var(--teal);color:#00140f;border:none;border-radius:11px;padding:13px 26px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:500;font-size:14px;padding:9px 16px}
+.btn.stop{background:var(--red);color:#fff;font-size:14px;padding:9px 18px}
+a{color:var(--teal)}
+.drop{display:block;border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--teal);background:#0b2a24}
+.drop .big-ico{font-size:34px;display:block;margin-bottom:6px}
+.f{cursor:default}.web .f{cursor:pointer}
+.err{color:#fda4af;background:#3a1621;border:1px solid #6b2134;padding:10px 14px;border-radius:10px;margin-top:12px;display:none}
+/* ─── écran d'analyse ─── */
+#run{display:none}
+.top{display:grid;grid-template-columns:1fr 300px;gap:18px}
+@media (max-width:900px){.top{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h3{margin:0 0 10px;font-size:14px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+canvas{width:100%;display:block;border-radius:8px;image-rendering:pixelated;cursor:crosshair}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.big{font-size:34px;font-weight:700;line-height:1.1}
+.bar{height:10px;border-radius:99px;background:#050a09;overflow:hidden;margin:10px 0 6px}
+.bar div{height:100%;width:0;background:linear-gradient(90deg,#1bbf9c,var(--teal));transition:width .4s}
+.kv{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--muted)}
+.kv b{color:var(--text);font-weight:600}
+.phase{display:inline-block;padding:3px 10px;border-radius:99px;background:#0b2a24;color:var(--teal);font-size:12.5px;font-weight:600}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cats span{background:var(--panel2);padding:4px 10px;border-radius:8px;font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:6px 12px;border-radius:8px;cursor:pointer;background:var(--panel2);font-size:13px;border:1px solid transparent}
+.tab.on{border-color:var(--teal);color:#bff7ee}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:560px;overflow:auto;padding-right:4px}
+.f{background:var(--panel2);border-radius:10px;overflow:hidden;font-size:12px;border:1px solid transparent}
+.f:hover{border-color:var(--teal)}
+.f .th{height:110px;display:grid;place-items:center;background:#050a09;font-size:30px;font-weight:700;color:#1f6b5c;overflow:hidden}
+.f .th img{width:100%;height:100%;object-fit:cover}
+.f .m{padding:7px 9px}
+.f .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.st{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;margin-top:3px}
+.st.complet{background:#12352c;color:var(--green)}
+.st.reconstruit{background:#3b2a12;color:var(--orange)}
+.st.partiel{background:#3a1621;color:#fda4af}
+.log{font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;color:var(--muted);max-height:180px;overflow:auto;white-space:pre-wrap}
+.path{font:13px ui-monospace,Menlo,Consolas,monospace;background:#050a09;padding:8px 12px;border-radius:8px;word-break:break-all}
+.empty{color:var(--muted);text-align:center;padding:30px}
+#tip{position:fixed;pointer-events:none;background:#0b1118;border:1px solid var(--line);padding:5px 9px;border-radius:7px;font-size:12px;display:none;z-index:9}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:20px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo.svg" alt="">
+  <div>
+    <h1>Mosa<span>ïk</span></h1>
+    <p>Récupérez vos fichiers, même quand le disque les a laissés en morceaux.</p>
+  </div>
+  <div class="sp"></div>
+  <span id="rootBadge" class="badge">…</span>
+  <span class="badge">v2.1.0</span>
+  <button class="btn ghost" id="quit" title="Fermer Mosaïk" style="padding:6px 12px;font-size:13px">⏻ Quitter</button>
+</header>
+
+<main>
+<!-- ═══════════ PRÉPARATION ═══════════ -->
+<section id="setup">
+  <div class="step">
+    <h2><span class="n">1</span> Quel disque voulez-vous sauver ?</h2>
+    <p class="hint">Mosaïk lit le disque <b>sans jamais rien y écrire</b>. Choisissez le disque entier si la partition a été effacée ou reformatée.</p>
+    <div id="webPick" style="display:none">
+      <label class="drop" id="drop">
+        <input type="file" id="imgFile" hidden>
+        <span class="big-ico">💽</span>
+        <b>Déposez ici une image disque</b>, ou cliquez pour la choisir<br>
+        <span class="hint">.img, .dd, .raw, .bin, .iso… L'analyse se fait <b>dans votre navigateur</b> : rien n'est envoyé sur internet.</span>
+      </label>
+      <p class="hint" style="margin-top:12px">ℹ️ Pour des raisons de sécurité, un site web ne peut pas lire directement un disque, une clé USB ou une carte SD.
+      Pour analyser un support branché, <a href="https://github.com/asblPixels/Mosaik#-installation" target="_blank" rel="noopener">installez Mosaïk</a> (Windows ou Linux, gratuit),
+      ou créez d'abord une image du support (par exemple <code>sudo dd if=/dev/sdX of=carte.img bs=4M status=progress</code> sous Linux).</p>
+    </div>
+    <div class="devs" id="devs"><div class="empty">Recherche des disques…</div></div>
+    <div class="row" id="imgRow" style="margin-top:12px">
+      <input type="text" id="imgPath" placeholder="… ou le chemin d'une image disque (.img, .dd, .E01, .vhd, .vmdk, .aff)">
+      <button class="btn ghost" id="refresh">↻ Actualiser</button>
+    </div>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">2</span> Que cherchez-vous ?</h2>
+    <div class="presets"><button data-p="photos">Photos seulement</button><button data-p="docs">Documents</button><button data-p="all">Tout</button></div>
+    <div class="chips" id="types"></div>
+    <label class="check" id="tskRow" style="margin-top:14px"><input type="checkbox" id="tsk" checked>
+      <span><b>Retrouver les fichiers supprimés avec leur nom et leur dossier d'origine</b> <span class="badge" id="tskBadge">…</span><br>
+      <span class="hint" id="tskHint">Avec The Sleuth Kit : NTFS, FAT, exFAT, ext2/3/4, HFS+, APFS, ISO 9660, UFS, YAFFS2. Crée aussi une chronologie (CSV).</span></span></label>
+    <label class="check"><input type="checkbox" id="carve" checked>
+      <span><b>Recherche par signature et recollage des fragments</b><br>
+      <span class="hint">Retrouve les fichiers même sans système de fichiers (disque formaté, partition effacée).</span></span></label>
+  </div>
+
+  <div class="step">
+    <h2><span class="n">3</span> Où ranger les fichiers retrouvés ?</h2>
+    <p class="hint">Sur un <b>autre disque</b> que celui à récupérer (clé USB, disque externe, disque de l'ordinateur…).</p>
+    <div class="row" id="outRow"><input type="text" id="out"></div>
+    <label class="check" id="cloneRow"><input type="checkbox" id="clone">
+      <span><b>Le disque est abîmé</b> (bruits, lenteurs, erreurs) : le copier d'abord vers une image.<br>
+      <span class="hint">Une seule lecture du disque, les zones illisibles sont sautées puis retentées. Il faut autant d'espace libre que la taille du disque.</span></span></label>
+    <details>
+      <summary>Réglages avancés</summary>
+      <div class="grid">
+        <label><span><input type="checkbox" id="deep"> Recherche profonde</span><span>Cherche aussi entre les secteurs (plus lent, utile pour cartes mémoire anciennes).</span></label>
+        <label>Taille de cluster (octets)<input type="number" id="cluster" value="4096" step="512" min="512"></label>
+        <label>Distance max. entre fragments (clusters)<input type="number" id="gap" value="1024" min="1" max="65536"></label>
+        <label>Ignorer les fichiers plus petits que (octets)<input type="number" id="minsize" value="2048" min="0"></label>
+        <label id="hashRow">Base de hachages (NSRL, md5sum…) — facultatif<input type="text" id="hashdb" placeholder="/chemin/vers/NSRLFile.txt"></label>
+      </div>
+    </details>
+  </div>
+
+  <div class="row">
+    <button class="btn" id="go" disabled>Lancer la récupération</button>
+    <span class="hint" id="goHint" style="margin:0">Choisissez d'abord un disque.</span>
+  </div>
+  <div class="err" id="err"></div>
+</section>
+
+<!-- ═══════════ ANALYSE ═══════════ -->
+<section id="run">
+  <div class="top">
+    <div class="card">
+      <h3>La mosaïque du disque</h3>
+      <canvas id="map" width="960" height="400"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--c0)"></i>Pas encore lu</span>
+        <span><i style="background:var(--c1)"></i>Vide</span>
+        <span><i style="background:var(--c2)"></i>Données</span>
+        <span><i style="background:var(--blue)"></i>Images</span>
+        <span><i style="background:var(--yellow)"></i>Documents</span>
+        <span><i style="background:var(--green)"></i>Audio</span>
+        <span><i style="background:var(--pink)"></i>Vidéos</span>
+        <span><i style="background:var(--violet)"></i>Archives</span>
+        <span><i style="background:var(--orange)"></i>Fichier recollé</span>
+        <span><i style="background:var(--red)"></i>Zone illisible</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Progression</h3>
+      <span class="phase" id="phase">…</span>
+      <div class="big" id="pct" style="margin-top:8px">0 %</div>
+      <div class="bar"><div id="barIn"></div></div>
+      <div class="kv"><span>Lu</span><b id="done">–</b></div>
+      <div class="kv"><span>Vitesse</span><b id="speed">–</b></div>
+      <div class="kv"><span>Temps restant</span><b id="eta">–</b></div>
+      <div class="kv"><span>Fichiers retrouvés</span><b id="nfiles">0</b></div>
+      <div class="kv"><span>Secteurs illisibles</span><b id="nbad">0</b></div>
+      <div class="cats" id="cats"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn stop" id="stop">■ Arrêter</button>
+        <button class="btn ghost" id="again" style="display:none">Nouvelle récupération</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Fichiers retrouvés</h3>
+    <div class="row"><div class="path" id="outPath" style="flex:1"></div><button class="btn ghost" id="zipAll" style="display:none">⬇ Tout télécharger (.zip)</button></div>
+    <div class="tabs" id="tabs" style="margin-top:12px"></div>
+    <div class="gallery" id="gallery"><div class="empty">Les fichiers apparaîtront ici au fur et à mesure.</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Journal</h3>
+    <div class="log" id="log"></div>
+  </div>
+</section>
+</main>
+<div id="tip"></div>
+<footer>Mosaïk — logiciel libre de <a href="https://www.asblpixels.be" target="_blank" rel="noopener">Pixel's ASBL</a></footer>
+
+<script src="app/web.js"></script>
+<script>
+const TOKEN = "";
+const $ = id => document.getElementById(id);
+const WEB = !!window.MosaikWeb;
+const api = (p, body) => WEB ? window.MosaikWeb.api(p, body) : fetch(p, body ? {method:"POST", headers:{"X-Mosaik-Token":TOKEN,"Content-Type":"application/json"}, body:JSON.stringify(body)}
+                                      : {headers:{"X-Mosaik-Token":TOKEN}}).then(r => r.json().then(j => (r.ok ? j : Promise.reject(j))));
+const human = n => { const u=["o","Ko","Mo","Go","To"]; let i=0; while(n>=1024&&i<4){n/=1024;i++} return (i?n.toFixed(1):n)+" "+u[i]; };
+const dur = s => { s=Math.round(s); if(!s) return "–"; const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h? h+" h "+m+" min" : m? m+" min "+(s%60)+" s" : s+" s"; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let source = "", families = {}, info = {};
+const PRESETS = {photos:["jpg","png","gif","bmp","mp4"], docs:["pdf","zip","sqlite"], all:null};
+
+async function init(){
+  info = await api("/api/info");
+  if(WEB) setupWeb();
+  families = info.families;
+  $("out").value = info.out;
+  const rb = $("rootBadge");
+  if(WEB){ rb.textContent = "En ligne · rien n'est envoyé"; rb.className = "badge ok"; }
+  else if(info.root){ rb.textContent = "Droits administrateur ✓"; rb.className = "badge ok"; }
+  else { rb.textContent = "Sans droits admin : images disque uniquement"; rb.className = "badge warn"; }
+  const tb = $("tskBadge");
+  if(info.tsk){ tb.textContent = "Sleuth Kit ✓"; tb.className = "badge ok"; }
+  else { tb.textContent = "Sleuth Kit absent"; tb.className = "badge warn"; $("tsk").checked = false; $("tsk").disabled = true;
+         $("tskHint").innerHTML = "Pour l'activer, installez The Sleuth Kit : <code>" + esc(info.tsk_hint) + "</code> puis relancez Mosaïk."; }
+  $("types").innerHTML = Object.entries(families).map(([k,v]) => `<span class="chip on" data-k="${k}">${esc(v)}</span>`).join("");
+  $("types").onclick = e => { if(e.target.dataset.k) e.target.classList.toggle("on"); };
+  document.querySelectorAll(".presets button").forEach(b => b.onclick = () => {
+    const p = PRESETS[b.dataset.p];
+    document.querySelectorAll("#types .chip").forEach(c => c.classList.toggle("on", !p || p.includes(c.dataset.k)));
+  });
+  loadDevices();
+  const st = await api("/api/status");
+  if(st.running || st.phase !== "attente") showRun();
+}
+
+async function loadDevices(){
+  if(WEB) return;
+  const devs = await api("/api/devices");
+  if(!devs.length){ $("devs").innerHTML = '<div class="empty">Aucun disque détecté.</div>'; return; }
+  $("devs").innerHTML = devs.map(d => {
+    const isPart = d.type !== "disk";
+    const icon = d.tran === "usb" || d.removable ? "🔌" : d.name.startsWith("mmcblk") ? "💾" : d.name.startsWith("nvme") ? "⚡" : "🖴";
+    const title = isPart ? (d.label || d.name) : (d.model || d.name);
+    const sub = [d.path, human(d.size), d.fs, isPart ? "partition" : (d.tran||"").toUpperCase()].filter(Boolean).join(" · ");
+    const warn = d.mount ? `<div class="warn">⚠ En cours d'utilisation (${esc(d.mount)})${d.mount==="/"?" — c'est le système !":""}</div>` : "";
+    return `<div class="dev ${isPart?"part":""}" data-p="${esc(d.path)}"><div class="t">${icon} ${esc(title)}</div><div class="s">${esc(sub)}</div>${warn}</div>`;
+  }).join("");
+  document.querySelectorAll(".dev").forEach(el => el.onclick = () => {
+    document.querySelectorAll(".dev").forEach(x => x.classList.remove("sel"));
+    el.classList.add("sel"); source = el.dataset.p; $("imgPath").value = ""; check();
+  });
+}
+function setupWeb(){
+  document.body.classList.add("web");
+  for(const id of ["devs","imgRow","outRow","cloneRow","tskRow","hashRow","quit"]) $(id).style.display = "none";
+  $("webPick").style.display = "";
+  document.querySelector("#setup .step:nth-child(1) h2").lastChild.textContent = " Quelle image disque voulez-vous analyser ?";
+  document.querySelector("#setup .step:nth-child(3) h2").lastChild.textContent = " Où vont les fichiers retrouvés ?";
+  document.querySelector("#setup .step:nth-child(3) .hint").innerHTML = "Ils apparaissent au fur et à mesure : cliquez sur un fichier pour le <b>télécharger</b>, ou téléchargez tout en <b>.zip</b> à la fin.";
+  $("tsk").checked = false;
+  document.querySelector("#setup .step:nth-child(1) .hint").innerHTML = "Mosaïk lit l'image <b>sans jamais la modifier</b>, directement sur votre ordinateur.";
+  check();
+  const pick = f => { if(!f) return; window.MosaikWeb.file = f; source = f.name;
+    $("drop").querySelector("b").textContent = "✔ " + f.name + " (" + human(f.size) + ")"; check(); };
+  $("imgFile").onchange = e => pick(e.target.files[0]);
+  const d = $("drop");
+  d.ondragover = e => { e.preventDefault(); d.classList.add("over"); };
+  d.ondragleave = () => d.classList.remove("over");
+  d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); pick(e.dataTransfer.files[0]); };
+  $("zipAll").onclick = () => window.MosaikWeb.zipAll();
+  window.addEventListener("mosaik-demo", () => { source = window.MosaikWeb.file.name; check(); $("go").click(); });
+  $("gallery").addEventListener("click", e => { const f = e.target.closest(".f"); if(f) window.MosaikWeb.download(+f.dataset.id); });
+}
+$("refresh").onclick = loadDevices;
+$("imgPath").oninput = () => { if($("imgPath").value.trim()){ source = $("imgPath").value.trim(); document.querySelectorAll(".dev").forEach(x=>x.classList.remove("sel")); } check(); };
+function check(){ $("go").disabled = !source; $("goHint").textContent = source ? "Source : " + source : (WEB ? "Choisissez d'abord une image disque." : "Choisissez d'abord un disque."); }
+
+$("go").onclick = async () => {
+  $("err").style.display = "none";
+  const types = [...document.querySelectorAll("#types .chip.on")].map(c => c.dataset.k);
+  if(!$("tsk").checked && !$("carve").checked){ showErr("Cochez au moins une méthode de récupération."); return; }
+  if($("carve").checked && !types.length){ showErr("Choisissez au moins un type de fichier."); return; }
+  try{
+    await api("/api/start", {source, types, out:$("out").value, clone:$("clone").checked, aligned:!$("deep").checked,
+      cluster:+$("cluster").value||4096, max_gap:+$("gap").value||1024, min_size:+$("minsize").value||0,
+      tsk:$("tsk").checked, carve:$("carve").checked, hashdb:$("hashdb").value.trim()});
+    showRun();
+  }catch(e){ showErr(e.erreur || "Erreur inconnue"); }
+};
+function showErr(m){ $("err").textContent = m; $("err").style.display = "block"; }
+
+/* ─── écran d'analyse ─── */
+let files = [], filter = "Tous", lastMap = "", hl = -1, timer = null;
+const COLORS = {"0":"#121c1a","1":"#17302b","2":"#2b4f47","3":"#f43f5e","4":"#60a5fa","5":"#facc15","6":"#4ade80","7":"#f472b6","8":"#a78bfa","9":"#fb923c"};
+const COLS = 60, ROWS = 40;
+
+function showRun(){
+  $("setup").style.display = "none"; $("run").style.display = "block";
+  files = []; $("gallery").innerHTML = '<div class="empty">Les fichiers apparaîtront ici au fur et à mesure.</div>';
+  $("stop").style.display = ""; $("again").style.display = "none";
+  clearInterval(timer); timer = setInterval(poll, 800); poll();
+}
+
+function drawMap(m){
+  const cv = $("map"), cx = cv.getContext("2d");
+  const w = cv.width / COLS, h = cv.height / ROWS;
+  cx.fillStyle = "#050a09"; cx.fillRect(0,0,cv.width,cv.height);
+  for(let i=0;i<m.length;i++){
+    const x = (i % COLS) * w, y = Math.floor(i / COLS) * h;
+    cx.fillStyle = COLORS[m[i]] || "#333";
+    cx.fillRect(x+1.5, y+1.5, w-3, h-3);
+  }
+  if(hl >= 0){ cx.strokeStyle = "#fff"; cx.lineWidth = 2; cx.strokeRect((hl%COLS)*w+.5, Math.floor(hl/COLS)*h+.5, w-1, h-1); }
+}
+
+let cur = null;
+async function poll(){
+  let s; try{ s = await api("/api/status?since=" + files.length); }catch(e){ return; }
+  cur = s;
+  const pct = s.size ? 100 * s.pos / s.size : 0;
+  const names = {attente:"En attente", chargement:"Chargement du moteur…", clonage:"Copie du disque abîmé", noms:"Fichiers supprimés (noms d'origine)", analyse:"Recherche des fichiers", termine:"Terminé ✓", arrete:"Arrêté", erreur:"Erreur"};
+  $("phase").textContent = names[s.phase] || s.phase;
+  $("phase").style.background = s.phase === "erreur" ? "#3a1621" : "";
+  $("pct").textContent = pct.toFixed(1).replace(".0","") + " %";
+  $("barIn").style.width = pct + "%";
+  $("done").textContent = human(s.pos) + " / " + human(s.size);
+  $("speed").textContent = s.speed ? human(s.speed) + "/s" : "–";
+  $("eta").textContent = s.running ? dur(s.eta) : "–";
+  $("nfiles").textContent = s.total_files;
+  $("nbad").textContent = s.bad;
+  $("outPath").textContent = WEB ? "⬇ Cliquez sur un fichier pour le télécharger" : (s.out ? "📁 " + s.out : "");
+  if(WEB) $("zipAll").style.display = s.total_files ? "" : "none";
+  $("cats").innerHTML = Object.entries(s.counts).map(([k,v]) => `<span>${esc(k)} : <b>${v}</b></span>`).join("");
+  $("log").textContent = s.log.join("\n") + (s.message ? "\n" + s.message : "");
+  if(s.map !== lastMap){ lastMap = s.map; drawMap(s.map); }
+  if(s.files.length){ files = files.concat(s.files); renderFiles(); }
+  if(!s.running && ["termine","arrete","erreur"].includes(s.phase)){
+    clearInterval(timer); $("stop").style.display = "none"; $("again").style.display = "";
+  }
+}
+
+function renderFiles(){
+  const cats = ["Tous", ...new Set(files.map(f => f.cat)), "Recollés", "Partiels"].concat(files.some(f=>f.known)?["Connus (base)"]:[]);
+  $("tabs").innerHTML = cats.map(c => `<span class="tab ${c===filter?"on":""}" data-c="${esc(c)}">${esc(c)}</span>`).join("");
+  const list = files.filter(f => filter==="Tous" || f.cat===filter || (filter==="Recollés" && f.status==="reconstruit") || (filter==="Partiels" && f.status==="partiel") || (filter==="Connus (base)" && f.known));
+  const shown = list.slice(-400).reverse();
+  $("gallery").innerHTML = shown.length ? shown.map(f => {
+    const img = ["jpg","png","gif","bmp","webp"].includes(f.ext)
+      ? `<img loading="lazy" src="${WEB ? f.url : "/api/file?id=" + f.id + "&t=" + TOKEN}" alt="" onerror="this.replaceWith('${f.ext.toUpperCase()}')">`
+      : f.ext.toUpperCase();
+    const fr = f.frags > 1 ? ` · ${f.frags} morceaux` : "";
+    const kn = f.known ? ' <span class="st complet">connu</span>' : "";
+    const tip = (f.origin ? f.origin : f.name) + "\nMD5 : " + (f.md5||"") + "\nSHA-256 : " + (f.sha256||"");
+    return `<div class="f" data-id="${f.id}" data-cell="${f.cell}" title="${esc(tip)}"><div class="th">${img}</div>
+      <div class="m"><div class="nm">${esc(f.name)}</div>${human(f.size)}${fr}<br><span class="st ${f.status}">${f.status}</span>${kn}</div></div>`;
+  }).join("") : '<div class="empty">Aucun fichier dans cette catégorie.</div>';
+}
+$("tabs").onclick = e => { if(e.target.dataset.c){ filter = e.target.dataset.c; renderFiles(); } };
+$("gallery").onmouseover = e => { const f = e.target.closest(".f"); hl = f ? +f.dataset.cell : -1; drawMap(lastMap); };
+$("gallery").onmouseleave = () => { hl = -1; drawMap(lastMap); };
+$("map").onmousemove = e => {
+  if(!cur || !cur.size) return;
+  const r = e.target.getBoundingClientRect();
+  const c = Math.floor((e.clientX - r.left) / r.width * COLS), rr = Math.floor((e.clientY - r.top) / r.height * ROWS);
+  const i = rr * COLS + c, per = cur.size / (COLS*ROWS);
+  const lbl = {"0":"pas encore lu","1":"vide","2":"données","3":"zone illisible","4":"images","5":"documents","6":"audio","7":"vidéos","8":"archives","9":"fichier recollé"}[lastMap[i]];
+  const t = $("tip"); t.style.display = "block"; t.style.left = (e.clientX+14)+"px"; t.style.top = (e.clientY+14)+"px";
+  t.textContent = `Zone ${human(i*per)} → ${human((i+1)*per)} : ${lbl}`;
+};
+$("map").onmouseleave = () => $("tip").style.display = "none";
+$("stop").onclick = () => api("/api/stop", {});
+$("again").onclick = () => { $("run").style.display = "none"; $("setup").style.display = ""; lastMap = ""; loadDevices(); };
+
+$("quit").onclick = async () => {
+  if(cur && cur.running && !confirm("Une analyse est en cours. Quitter quand même ?")) return;
+  try{ await api("/api/quit", {}); }catch(e){}
+  document.body.innerHTML = '<div style="display:grid;place-items:center;height:100vh;text-align:center"><div><h2>Mosaïk est fermé.</h2><p style="color:#93a8a3">Vous pouvez fermer cet onglet.</p></div></div>';
+};
+
+init();
+</script>
+</body>
+</html>

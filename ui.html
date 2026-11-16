@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mosaïk — récupération de fichiers</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
-@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:block}
-@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block}
-@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:block}
-@font-face{font-family:'Mosaik Poppins';src:url('/fonts/Poppins-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:block}
+@font-face{font-family:'Mosaik Poppins';src:url('fonts/Poppins-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:block}
 :root{
   --bg:#000000; --panel:#0a1110; --panel2:#111b19; --line:#1d2c29; --text:#ffffff; --muted:#93a8a3;
   --teal:#26efc5; --orange:#fb923c; --red:#f43f5e; --blue:#60a5fa; --yellow:#facc15;
@@ -57,6 +57,11 @@ details .grid label{font-size:13px;display:flex;flex-direction:column;gap:4px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:500;font-size:14px;padding:9px 16px}
 .btn.stop{background:var(--red);color:#fff;font-size:14px;padding:9px 18px}
+a{color:var(--teal)}
+.drop{display:block;border:2px dashed var(--line);border-radius:14px;padding:30px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--teal);background:#0b2a24}
+.drop .big-ico{font-size:34px;display:block;margin-bottom:6px}
+.f{cursor:default}.web .f{cursor:pointer}
 .err{color:#fda4af;background:#3a1621;border:1px solid #6b2134;padding:10px 14px;border-radius:10px;margin-top:12px;display:none}
 /* ─── écran d'analyse ─── */
 #run{display:none}
@@ -99,7 +104,7 @@ footer a{color:var(--teal)}
 </head>
 <body>
 <header>
-  <img src="/logo.svg" alt="">
+  <img src="logo.svg" alt="">
   <div>
     <h1>Mosa<span>ïk</span></h1>
     <p>Récupérez vos fichiers, même quand le disque les a laissés en morceaux.</p>
@@ -116,8 +121,19 @@ footer a{color:var(--teal)}
   <div class="step">
     <h2><span class="n">1</span> Quel disque voulez-vous sauver ?</h2>
     <p class="hint">Mosaïk lit le disque <b>sans jamais rien y écrire</b>. Choisissez le disque entier si la partition a été effacée ou reformatée.</p>
+    <div id="webPick" style="display:none">
+      <label class="drop" id="drop">
+        <input type="file" id="imgFile" hidden>
+        <span class="big-ico">💽</span>
+        <b>Déposez ici une image disque</b>, ou cliquez pour la choisir<br>
+        <span class="hint">.img, .dd, .raw, .bin, .iso… L'analyse se fait <b>dans votre navigateur</b> : rien n'est envoyé sur internet.</span>
+      </label>
+      <p class="hint" style="margin-top:12px">ℹ️ Pour des raisons de sécurité, un site web ne peut pas lire directement un disque, une clé USB ou une carte SD.
+      Pour analyser un support branché, <a href="https://github.com/asblPixels/Mosaik#-installation" target="_blank" rel="noopener">installez Mosaïk</a> (Windows ou Linux, gratuit),
+      ou créez d'abord une image du support (par exemple <code>sudo dd if=/dev/sdX of=carte.img bs=4M status=progress</code> sous Linux).</p>
+    </div>
     <div class="devs" id="devs"><div class="empty">Recherche des disques…</div></div>
-    <div class="row" style="margin-top:12px">
+    <div class="row" id="imgRow" style="margin-top:12px">
       <input type="text" id="imgPath" placeholder="… ou le chemin d'une image disque (.img, .dd, .E01, .vhd, .vmdk, .aff)">
       <button class="btn ghost" id="refresh">↻ Actualiser</button>
     </div>
@@ -127,7 +143,7 @@ footer a{color:var(--teal)}
     <h2><span class="n">2</span> Que cherchez-vous ?</h2>
     <div class="presets"><button data-p="photos">Photos seulement</button><button data-p="docs">Documents</button><button data-p="all">Tout</button></div>
     <div class="chips" id="types"></div>
-    <label class="check" style="margin-top:14px"><input type="checkbox" id="tsk" checked>
+    <label class="check" id="tskRow" style="margin-top:14px"><input type="checkbox" id="tsk" checked>
       <span><b>Retrouver les fichiers supprimés avec leur nom et leur dossier d'origine</b> <span class="badge" id="tskBadge">…</span><br>
       <span class="hint" id="tskHint">Avec The Sleuth Kit : NTFS, FAT, exFAT, ext2/3/4, HFS+, APFS, ISO 9660, UFS, YAFFS2. Crée aussi une chronologie (CSV).</span></span></label>
     <label class="check"><input type="checkbox" id="carve" checked>
@@ -138,8 +154,8 @@ footer a{color:var(--teal)}
   <div class="step">
     <h2><span class="n">3</span> Où ranger les fichiers retrouvés ?</h2>
     <p class="hint">Sur un <b>autre disque</b> que celui à récupérer (clé USB, disque externe, disque de l'ordinateur…).</p>
-    <div class="row"><input type="text" id="out"></div>
-    <label class="check"><input type="checkbox" id="clone">
+    <div class="row" id="outRow"><input type="text" id="out"></div>
+    <label class="check" id="cloneRow"><input type="checkbox" id="clone">
       <span><b>Le disque est abîmé</b> (bruits, lenteurs, erreurs) : le copier d'abord vers une image.<br>
       <span class="hint">Une seule lecture du disque, les zones illisibles sont sautées puis retentées. Il faut autant d'espace libre que la taille du disque.</span></span></label>
     <details>
@@ -149,7 +165,7 @@ footer a{color:var(--teal)}
         <label>Taille de cluster (octets)<input type="number" id="cluster" value="4096" step="512" min="512"></label>
         <label>Distance max. entre fragments (clusters)<input type="number" id="gap" value="1024" min="1" max="65536"></label>
         <label>Ignorer les fichiers plus petits que (octets)<input type="number" id="minsize" value="2048" min="0"></label>
-        <label>Base de hachages (NSRL, md5sum…) — facultatif<input type="text" id="hashdb" placeholder="/chemin/vers/NSRLFile.txt"></label>
+        <label id="hashRow">Base de hachages (NSRL, md5sum…) — facultatif<input type="text" id="hashdb" placeholder="/chemin/vers/NSRLFile.txt"></label>
       </div>
     </details>
   </div>
@@ -200,7 +216,7 @@ footer a{color:var(--teal)}
 
   <div class="card" style="margin-top:18px">
     <h3>Fichiers retrouvés</h3>
-    <div class="path" id="outPath"></div>
+    <div class="row"><div class="path" id="outPath" style="flex:1"></div><button class="btn ghost" id="zipAll" style="display:none">⬇ Tout télécharger (.zip)</button></div>
     <div class="tabs" id="tabs" style="margin-top:12px"></div>
     <div class="gallery" id="gallery"><div class="empty">Les fichiers apparaîtront ici au fur et à mesure.</div></div>
   </div>
@@ -217,7 +233,8 @@ footer a{color:var(--teal)}
 <script>
 const TOKEN = "__TOKEN__";
 const $ = id => document.getElementById(id);
-const api = (p, body) => fetch(p, body ? {method:"POST", headers:{"X-Mosaik-Token":TOKEN,"Content-Type":"application/json"}, body:JSON.stringify(body)}
+const WEB = !!window.MosaikWeb;
+const api = (p, body) => WEB ? window.MosaikWeb.api(p, body) : fetch(p, body ? {method:"POST", headers:{"X-Mosaik-Token":TOKEN,"Content-Type":"application/json"}, body:JSON.stringify(body)}
                                       : {headers:{"X-Mosaik-Token":TOKEN}}).then(r => r.json().then(j => (r.ok ? j : Promise.reject(j))));
 const human = n => { const u=["o","Ko","Mo","Go","To"]; let i=0; while(n>=1024&&i<4){n/=1024;i++} return (i?n.toFixed(1):n)+" "+u[i]; };
 const dur = s => { s=Math.round(s); if(!s) return "–"; const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h? h+" h "+m+" min" : m? m+" min "+(s%60)+" s" : s+" s"; };
@@ -228,10 +245,12 @@ const PRESETS = {photos:["jpg","png","gif","bmp","mp4"], docs:["pdf","zip","sqli
 
 async function init(){
   info = await api("/api/info");
+  if(WEB) setupWeb();
   families = info.families;
   $("out").value = info.out;
   const rb = $("rootBadge");
-  if(info.root){ rb.textContent = "Droits administrateur ✓"; rb.className = "badge ok"; }
+  if(WEB){ rb.textContent = "En ligne · rien n'est envoyé"; rb.className = "badge ok"; }
+  else if(info.root){ rb.textContent = "Droits administrateur ✓"; rb.className = "badge ok"; }
   else { rb.textContent = "Sans droits admin : images disque uniquement"; rb.className = "badge warn"; }
   const tb = $("tskBadge");
   if(info.tsk){ tb.textContent = "Sleuth Kit ✓"; tb.className = "badge ok"; }
@@ -249,6 +268,7 @@ async function init(){
 }
 
 async function loadDevices(){
+  if(WEB) return;
   const devs = await api("/api/devices");
   if(!devs.length){ $("devs").innerHTML = '<div class="empty">Aucun disque détecté.</div>'; return; }
   $("devs").innerHTML = devs.map(d => {
@@ -264,9 +284,30 @@ async function loadDevices(){
     el.classList.add("sel"); source = el.dataset.p; $("imgPath").value = ""; check();
   });
 }
+function setupWeb(){
+  document.body.classList.add("web");
+  for(const id of ["devs","imgRow","outRow","cloneRow","tskRow","hashRow","quit"]) $(id).style.display = "none";
+  $("webPick").style.display = "";
+  document.querySelector("#setup .step:nth-child(1) h2").lastChild.textContent = " Quelle image disque voulez-vous analyser ?";
+  document.querySelector("#setup .step:nth-child(3) h2").lastChild.textContent = " Où vont les fichiers retrouvés ?";
+  document.querySelector("#setup .step:nth-child(3) .hint").innerHTML = "Ils apparaissent au fur et à mesure : cliquez sur un fichier pour le <b>télécharger</b>, ou téléchargez tout en <b>.zip</b> à la fin.";
+  $("tsk").checked = false;
+  document.querySelector("#setup .step:nth-child(1) .hint").innerHTML = "Mosaïk lit l'image <b>sans jamais la modifier</b>, directement sur votre ordinateur.";
+  check();
+  const pick = f => { if(!f) return; window.MosaikWeb.file = f; source = f.name;
+    $("drop").querySelector("b").textContent = "✔ " + f.name + " (" + human(f.size) + ")"; check(); };
+  $("imgFile").onchange = e => pick(e.target.files[0]);
+  const d = $("drop");
+  d.ondragover = e => { e.preventDefault(); d.classList.add("over"); };
+  d.ondragleave = () => d.classList.remove("over");
+  d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); pick(e.dataTransfer.files[0]); };
+  $("zipAll").onclick = () => window.MosaikWeb.zipAll();
+  window.addEventListener("mosaik-demo", () => { source = window.MosaikWeb.file.name; check(); $("go").click(); });
+  $("gallery").addEventListener("click", e => { const f = e.target.closest(".f"); if(f) window.MosaikWeb.download(+f.dataset.id); });
+}
 $("refresh").onclick = loadDevices;
 $("imgPath").oninput = () => { if($("imgPath").value.trim()){ source = $("imgPath").value.trim(); document.querySelectorAll(".dev").forEach(x=>x.classList.remove("sel")); } check(); };
-function check(){ $("go").disabled = !source; $("goHint").textContent = source ? "Source : " + source : "Choisissez d'abord un disque."; }
+function check(){ $("go").disabled = !source; $("goHint").textContent = source ? "Source : " + source : (WEB ? "Choisissez d'abord une image disque." : "Choisissez d'abord un disque."); }
 
 $("go").onclick = async () => {
   $("err").style.display = "none";
@@ -311,7 +352,7 @@ async function poll(){
   let s; try{ s = await api("/api/status?since=" + files.length); }catch(e){ return; }
   cur = s;
   const pct = s.size ? 100 * s.pos / s.size : 0;
-  const names = {attente:"En attente", clonage:"Copie du disque abîmé", noms:"Fichiers supprimés (noms d'origine)", analyse:"Recherche des fichiers", termine:"Terminé ✓", arrete:"Arrêté", erreur:"Erreur"};
+  const names = {attente:"En attente", chargement:"Chargement du moteur…", clonage:"Copie du disque abîmé", noms:"Fichiers supprimés (noms d'origine)", analyse:"Recherche des fichiers", termine:"Terminé ✓", arrete:"Arrêté", erreur:"Erreur"};
   $("phase").textContent = names[s.phase] || s.phase;
   $("phase").style.background = s.phase === "erreur" ? "#3a1621" : "";
   $("pct").textContent = pct.toFixed(1).replace(".0","") + " %";
@@ -321,7 +362,8 @@ async function poll(){
   $("eta").textContent = s.running ? dur(s.eta) : "–";
   $("nfiles").textContent = s.total_files;
   $("nbad").textContent = s.bad;
-  $("outPath").textContent = s.out ? "📁 " + s.out : "";
+  $("outPath").textContent = WEB ? "⬇ Cliquez sur un fichier pour le télécharger" : (s.out ? "📁 " + s.out : "");
+  if(WEB) $("zipAll").style.display = s.total_files ? "" : "none";
   $("cats").innerHTML = Object.entries(s.counts).map(([k,v]) => `<span>${esc(k)} : <b>${v}</b></span>`).join("");
   $("log").textContent = s.log.join("\n") + (s.message ? "\n" + s.message : "");
   if(s.map !== lastMap){ lastMap = s.map; drawMap(s.map); }
@@ -338,12 +380,12 @@ function renderFiles(){
   const shown = list.slice(-400).reverse();
   $("gallery").innerHTML = shown.length ? shown.map(f => {
     const img = ["jpg","png","gif","bmp","webp"].includes(f.ext)
-      ? `<img loading="lazy" src="/api/file?id=${f.id}&t=${TOKEN}" alt="" onerror="this.replaceWith('${f.ext.toUpperCase()}')">`
+      ? `<img loading="lazy" src="${WEB ? f.url : "/api/file?id=" + f.id + "&t=" + TOKEN}" alt="" onerror="this.replaceWith('${f.ext.toUpperCase()}')">`
       : f.ext.toUpperCase();
     const fr = f.frags > 1 ? ` · ${f.frags} morceaux` : "";
     const kn = f.known ? ' <span class="st complet">connu</span>' : "";
     const tip = (f.origin ? f.origin : f.name) + "\nMD5 : " + (f.md5||"") + "\nSHA-256 : " + (f.sha256||"");
-    return `<div class="f" data-cell="${f.cell}" title="${esc(tip)}"><div class="th">${img}</div>
+    return `<div class="f" data-id="${f.id}" data-cell="${f.cell}" title="${esc(tip)}"><div class="th">${img}</div>
       <div class="m"><div class="nm">${esc(f.name)}</div>${human(f.size)}${fr}<br><span class="st ${f.status}">${f.status}</span>${kn}</div></div>`;
   }).join("") : '<div class="empty">Aucun fichier dans cette catégorie.</div>';
 }
