@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-16 — Major update: speed and Windows port
+
 ### Added
+- **Windows 10/11 support**: physical drives (`\\.\PhysicalDriveN`) and volumes (`\\.\C:`), drive listing via PowerShell, disk size via `DeviceIoControl`, sector-aligned raw reads, UAC elevation, Windows-safe file names (reserved names, trailing dots).
+- Windows installer (`scripts/install-windows.bat` / `.ps1`): finds or installs Python (winget), Start menu and Desktop shortcuts with icon (`assets/mosaik.ico`).
+- **Quit** button in the interface (needed on Windows where Mosaïk runs without a console).
+- CI now also runs the recovery test on **Windows**.
+
+### Changed — speed
+- **Damaged areas no longer read sector by sector**: unreadable zones are handled in 64 KB units, remembered (never re-read) and, after 3 consecutive failures, skipped exponentially (ddrescue method). Simulated 20 MB bad zone at 50 ms per failed read: **~34 min → 1.7 s**.
+- **"Failing drive" mode**: second pass now only trims the edges of bad zones (8 consecutive failures per side, 5 min budget) instead of retrying every sector. Same simulation: **~34 min → 7.5 s**.
+- **Read-ahead**: the next 16 MB block is read while the current one is analysed (I/O and CPU overlap); empty zones are skipped instantly.
+- **Time budget** of 2 s per fragment search (JPEG, PNG, ZIP/Office) so a damaged file can no longer stall the scan.
+- PDF end search limited to 96 MB.
+
+### Added (docs)
 - English and French READMEs, screenshots, social preview image (`assets/social-preview.png`, 1280×640).
 - One-line installer for all distributions (`scripts/install-linux.sh`).
 - CI (syntax, lint, shellcheck, recovery test), issue templates, contributing guide.

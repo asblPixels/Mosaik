@@ -6,10 +6,11 @@
 
 ### Get your files back — even in pieces.
 
-**A simple, visual, open-source data recovery tool for every Linux distribution**
+**A simple, visual, open-source data recovery tool for Linux (any distribution) and Windows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20(any%20distro)-blue.svg)](#️-supported-systems)
+[![Version](https://img.shields.io/badge/version-2.0.0-26EFC5.svg)](CHANGELOG.md)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%26%20Windows-blue.svg)](#️-supported-systems)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#️-supported-systems)
 [![GUI](https://img.shields.io/badge/GUI-web%20browser-teal.svg)](#-usage)
@@ -30,11 +31,20 @@
 
 ## 📖 About
 
-**Mosaïk** is a free, open-source file recovery tool for Linux. It brings back deleted or lost photos, documents, music and videos from hard drives, SSDs, USB sticks and memory cards — **even when they are fragmented**, i.e. stored as several non-contiguous fragments on the medium.
+**Mosaïk** is a free, open-source file recovery tool for Linux and Windows. It brings back deleted or lost photos, documents, music and videos from hard drives, SSDs, USB sticks and memory cards — **even when they are fragmented**, i.e. stored as several non-contiguous fragments on the medium.
 
 While scanning, the disk is drawn as a **mosaic** that lights up as it goes: you can see where the images, documents, empty areas, damaged sectors and re-assembled files are. Recovered files appear live, with photo previews.
 
 > **Origin**: This project is created and maintained by **[asblPixels](https://github.com/asblPixels)** as part of its open-source software initiative, based on an idea by **Mr Stéphane Quain**, who took part in the project and leads its beta testing. It is released under the MIT License and is free to use, modify and distribute.
+
+### 🆕 What's new in 2.0 — major update
+
+| | |
+|---|---|
+| ⚡ **Speed** | Damaged areas are no longer re-read sector by sector: they are skipped exponentially (ddrescue method) and never read twice. On a simulated 20 MB bad zone: **~34 min → 1.7 s**. 16 MB read-ahead, empty areas skipped instantly, time-boxed fragment search. |
+| 🪟 **Windows port** | Mosaïk now runs on **Windows 10 and 11**: physical drives and volumes (C:, D:…), double-click install, Start menu and Desktop shortcuts. |
+
+Details in the [CHANGELOG](CHANGELOG.md).
 
 ### ✨ Why Mosaïk?
 
@@ -45,7 +55,7 @@ Mosaïk aims to be **the simplest possible tool**:
 - 🖱️ **Three questions, one button**: which disk? what to look for? where to save? → *Start recovery*.
 - 👀 **See everything**: the disk mosaic, the progress, photos coming back one by one.
 - 🧩 **Fragmented files are re-assembled** and every reconstruction is validated (CRC, format structure).
-- 🐧 **Runs everywhere**: Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void… Python 3 is all it needs.
+- 🐧🪟 **Runs everywhere**: Windows 10/11 and every Linux distribution (Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE…). Python 3 is all it needs.
 
 ### 🆘 Who is it for?
 
@@ -128,13 +138,13 @@ The interface is in French; English is planned.
 
 | Component | Requirement |
 |---|---|
-| **OS** | Any Linux distribution (Fedora, RHEL, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void, NixOS, Alpine…) |
+| **OS** | Any Linux distribution (Fedora, RHEL, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void, NixOS, Alpine…) **or Windows 10 / 11** |
 | **Python** | 3.8 or newer (already installed on nearly every distribution) |
 | **Libraries** | **None** — Python standard library only |
 | **Interface** | Any web browser (Firefox, Chromium, Chrome, Epiphany…); text mode for headless systems |
 | **Desktop** | GNOME, KDE Plasma, Xfce, Cinnamon, MATE, LXQt… X11 and Wayland |
 | **Architecture** | x86_64, ARM (Raspberry Pi), etc. |
-| **Privileges** | Admin password to read a disk (pkexec, sudo or doas); none to scan an image file |
+| **Privileges** | Admin password to read a disk (pkexec, sudo or doas; UAC prompt on Windows); none to scan an image file |
 | **Optional** | `sleuthkit` for original names, partitions, timeline and E01/VHD/VMDK images |
 | **Disk space** | Room for the recovered files; "failing drive" mode: plus the size of the disk |
 
@@ -154,7 +164,17 @@ The script:
 
 > ℹ️ While the repository is **private**, this command needs GitHub authentication — use the manual install below.
 
-### Step 1 — Download
+### 🪟 Windows 10 / 11
+
+1. **Download** the ZIP (**Code → Download ZIP**) and extract it (e.g. on your Desktop).
+2. **Double-click** `scripts\install-windows.bat`.
+3. That's it: **Mosaïk** appears in the Start menu and on the Desktop.
+
+The installer finds Python or installs it automatically (winget). On launch, Windows asks for administrator permission: it is required to read a disk.
+
+> Optional: for original file names, install [The Sleuth Kit for Windows](https://www.sleuthkit.org/sleuthkit/download.php) and add its `bin` folder to the PATH.
+
+### 🐧 Linux — Step 1 — Download
 
 ```bash
 git clone https://github.com/asblPixels/Mosaik.git
@@ -301,7 +321,8 @@ Mosaik/
 ├── ui.html                   # Interface (HTML/CSS/JS, no dependency)
 ├── install.sh / uninstall.sh # Per-user install
 ├── scripts/
-│   └── install-linux.sh      # One-line installer (all distributions)
+│   ├── install-linux.sh      # One-line installer (all distributions)
+│   └── install-windows.bat   # Windows installer (double-click) + .ps1
 ├── packaging/
 │   └── mosaik.desktop        # Applications menu entry
 ├── assets/                   # Logo, icons (SVG + PNG 16→512), social preview
@@ -345,7 +366,13 @@ Install your distribution's `sleuthkit` package (see step 2), then restart Mosa�
 JPEG re-assembly is likely, not certain. Keep the photo: the top part is almost always right. Also try increasing the *max distance between fragments*.
 
 ### Scanning is slow
-Speed mostly depends on the disk (a USB 2.0 stick reads ~20 MB/s). A failing drive can be very slow: use the "damaged disk" mode.
+Since 2.0, damaged areas are skipped quickly. Speed then mostly depends on the medium: a USB 2.0 stick reads ~20 MB/s (1 TB ≈ 14 h), a USB 3.0 drive ~120 MB/s (1 TB ≈ 2 h 30). To go faster: untick formats you don't need and, if The Sleuth Kit is installed, untick signature search to recover only deleted files with their names (a few minutes).
+
+### Windows: "Windows protected your PC" (SmartScreen)
+Click **More info → Run anyway**: the script is not digitally signed, like most open-source software.
+
+### Windows: the disk is not listed
+Mosaïk was not allowed to run as administrator. Start it again and accept the User Account Control (UAC) prompt.
 
 ## 🤝 Need a hand?
 

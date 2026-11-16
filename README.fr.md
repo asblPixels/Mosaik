@@ -6,10 +6,11 @@
 
 ### Récupérez vos fichiers, même en morceaux.
 
-**Un récupérateur de données visuel, simple et libre, pour toutes les distributions Linux**
+**Un récupérateur de données visuel, simple et libre, pour Linux (toutes distributions) et Windows**
 
 [![Licence : MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Plateforme](https://img.shields.io/badge/plateforme-Linux%20(toutes%20distributions)-blue.svg)](#️-systèmes-compatibles)
+[![Version](https://img.shields.io/badge/version-2.0.0-26EFC5.svg)](CHANGELOG.md)
+[![Plateforme](https://img.shields.io/badge/plateforme-Linux%20%26%20Windows-blue.svg)](#️-systèmes-compatibles)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Dépendances](https://img.shields.io/badge/d%C3%A9pendances-aucune-brightgreen.svg)](#️-systèmes-compatibles)
 [![Interface](https://img.shields.io/badge/interface-navigateur%20web-teal.svg)](#-utilisation)
@@ -30,11 +31,20 @@
 
 ## 📖 À propos
 
-**Mosaïk** est un logiciel libre de récupération de fichiers pour Linux. Il retrouve les photos, documents, musiques et vidéos effacés ou perdus sur un disque dur, un SSD, une clé USB ou une carte mémoire, **même lorsqu'ils sont fragmentés**, c'est-à-dire stockés en plusieurs fragments non contigus sur le support.
+**Mosaïk** est un logiciel libre de récupération de fichiers pour Linux et Windows. Il retrouve les photos, documents, musiques et vidéos effacés ou perdus sur un disque dur, un SSD, une clé USB ou une carte mémoire, **même lorsqu'ils sont fragmentés**, c'est-à-dire stockés en plusieurs fragments non contigus sur le support.
 
 Pendant l'analyse, le disque s'affiche comme une **mosaïque** qui se colore au fur et à mesure : on voit où sont les images, les documents, les zones vides, les zones abîmées et les fichiers recollés. Les fichiers retrouvés apparaissent en direct, avec un aperçu des photos.
 
 > **Origine** : ce projet est créé et maintenu par **[asblPixels](https://github.com/asblPixels)**, dans le cadre de son initiative de logiciels libres, sur une idée de **M. Stéphane Quain**, qui a participé au projet et en assure le bêta-test. Il est publié sous licence MIT : libre d'utilisation, de modification et de diffusion.
+
+### 🆕 Nouveautés de la version 2.0 — mise à jour majeure
+
+| | |
+|---|---|
+| ⚡ **Vitesse** | Les zones abîmées ne sont plus relues secteur par secteur : elles sont sautées de façon exponentielle (méthode ddrescue) et jamais relues. Sur une zone abîmée simulée de 20 Mo : **~34 min → 1,7 s**. Lecture anticipée par blocs de 16 Mo, zones vides ignorées instantanément, temps limité par recherche de fragments. |
+| 🪟 **Portage Windows** | Mosaïk fonctionne désormais sous **Windows 10 et 11** : disques physiques et lecteurs (C:, D:…), installation en un double-clic, raccourcis menu Démarrer et Bureau. |
+
+Détails dans le [CHANGELOG](CHANGELOG.md).
 
 ### ✨ Pourquoi Mosaïk ?
 
@@ -45,7 +55,7 @@ Mosaïk veut être **l'outil le plus simple possible** :
 - 🖱️ **Trois questions, un bouton** : quel disque ? quoi chercher ? où ranger ? → *Lancer la récupération*.
 - 👀 **On voit tout** : la mosaïque du disque, la progression, les photos qui reviennent une à une.
 - 🧩 **Les fichiers fragmentés sont réassemblés** et chaque reconstruction est validée (CRC, structure du format).
-- 🐧 **Partout** : Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void… Python 3 suffit.
+- 🐧🪟 **Partout** : Windows 10/11 et toutes les distributions Linux (Fedora, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE…). Python 3 suffit.
 
 ### 🆘 Pour qui ?
 
@@ -126,13 +136,13 @@ Avec The Sleuth Kit, **tous les types de fichiers** supprimés sont retrouvés, 
 
 | Élément | Exigence |
 |---|---|
-| **Système** | N'importe quelle distribution Linux (Fedora, RHEL, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void, NixOS, Alpine…) |
+| **Système** | N'importe quelle distribution Linux (Fedora, RHEL, Ubuntu, Debian, Mint, Arch, Manjaro, openSUSE, Gentoo, Void, NixOS, Alpine…) **ou Windows 10 / 11** |
 | **Python** | 3.8 ou plus récent (déjà présent sur presque toutes les distributions) |
 | **Bibliothèques** | **Aucune** : uniquement la bibliothèque standard de Python |
 | **Interface** | N'importe quel navigateur (Firefox, Chromium, Chrome, Epiphany…) ; mode texte disponible sans écran |
 | **Bureau** | GNOME, KDE Plasma, Xfce, Cinnamon, MATE, LXQt… X11 et Wayland |
 | **Architecture** | x86_64, ARM (Raspberry Pi), etc. |
-| **Droits** | Mot de passe administrateur pour lire un disque (pkexec, sudo ou doas) ; aucun pour analyser une image |
+| **Droits** | Mot de passe administrateur pour lire un disque (pkexec, sudo ou doas ; fenêtre UAC sous Windows) ; aucun pour analyser une image |
 | **Facultatif** | `sleuthkit` pour les noms d'origine, les partitions, la chronologie et les images E01/VHD/VMDK |
 | **Espace disque** | Celui des fichiers récupérés ; mode « disque abîmé » : la taille du disque en plus |
 
@@ -152,7 +162,17 @@ Le script :
 
 > ℹ️ Tant que le dépôt est **privé**, cette commande ne fonctionne pas sans connexion à GitHub : utilisez l'installation manuelle ci-dessous.
 
-### Étape 1 — Télécharger
+### 🪟 Windows 10 / 11
+
+1. **Téléchargez** le ZIP : bouton **Code → Download ZIP**, puis décompressez-le (sur le Bureau par exemple).
+2. **Double-cliquez** sur `scripts\install-windows.bat`.
+3. C'est tout : **Mosaïk** apparaît dans le menu Démarrer et sur le Bureau.
+
+L'installateur trouve Python ou l'installe automatiquement (winget). Au lancement, Windows demande l'autorisation administrateur : elle est nécessaire pour lire un disque.
+
+> Facultatif : pour les noms d'origine, installez [The Sleuth Kit pour Windows](https://www.sleuthkit.org/sleuthkit/download.php) et ajoutez son dossier `bin` au PATH.
+
+### 🐧 Linux — Étape 1 — Télécharger
 
 ```bash
 git clone https://github.com/asblPixels/Mosaik.git
@@ -299,7 +319,8 @@ Mosaik/
 ├── ui.html                   # Interface (HTML/CSS/JS, sans dépendance)
 ├── install.sh / uninstall.sh # Installation pour l'utilisateur courant
 ├── scripts/
-│   └── install-linux.sh      # Installation en une ligne (toutes distributions)
+│   ├── install-linux.sh      # Installation en une ligne (toutes distributions)
+│   └── install-windows.bat   # Installation Windows (double-clic) + .ps1
 ├── packaging/
 │   └── mosaik.desktop        # Entrée du menu des applications
 ├── assets/                   # Logo, icônes (SVG + PNG 16→512), aperçu social
@@ -343,7 +364,13 @@ Installez le paquet `sleuthkit` de votre distribution (voir l'étape 2), puis re
 Le recollage des JPEG est probable, pas certain. Gardez la photo : la partie haute est presque toujours correcte. Essayez aussi d'augmenter la *distance max. entre fragments*.
 
 ### L'analyse est lente
-La vitesse dépend surtout du disque (une clé USB 2.0 lit à ~20 Mo/s). Un disque abîmé peut être très lent : utilisez le mode « disque abîmé ».
+Depuis la version 2.0, les zones abîmées sont sautées rapidement. La vitesse dépend ensuite surtout du support : une clé USB 2.0 lit à ~20 Mo/s (1 To ≈ 14 h), un disque USB 3.0 à ~120 Mo/s (1 To ≈ 2 h 30). Pour aller plus vite : décochez les formats inutiles et, si The Sleuth Kit est installé, décochez la recherche par signature pour ne récupérer que les fichiers supprimés avec leur nom (quelques minutes).
+
+### Windows : « Windows a protégé votre ordinateur » (SmartScreen)
+Cliquez sur **Informations complémentaires → Exécuter quand même** : le script n'est pas signé numériquement, comme la plupart des logiciels libres.
+
+### Windows : le disque n'apparaît pas
+Mosaïk n'a pas été autorisé en administrateur. Relancez-le et acceptez la fenêtre de contrôle de compte (UAC).
 
 ## 🤝 Besoin d'un coup de main ?
 

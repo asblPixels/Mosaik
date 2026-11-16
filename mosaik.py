@@ -5,8 +5,8 @@ Mosaïk — récupérateur visuel de fichiers pour disques endommagés ou fragme
 Pixel's ASBL — https://www.asblpixels.be
 
 Aucune dépendance : uniquement la bibliothèque standard de Python 3 (>= 3.8).
-Fonctionne sur toutes les distributions Linux. L'interface s'ouvre dans le
-navigateur web (serveur local accessible uniquement depuis cette machine).
+Fonctionne sur toutes les distributions Linux et sur Windows 10/11.
+L'interface s'ouvre dans le navigateur web (serveur local accessible uniquement depuis cette machine).
 
 Principe de sécurité : le disque source n'est JAMAIS écrit. Il est ouvert en
 lecture seule ; les fichiers retrouvés sont enregistrés ailleurs.
@@ -31,13 +31,113 @@ import webbrowser
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 APP = "Mosaïk"
 HERE = os.path.dirname(os.path.realpath(__file__))
 
 SECTOR = 512
+WINDOWS = os.name == "nt"
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Couche plateforme : Linux et Windows
+# ═════════════════════════════════════════════════════════════════════════════
+
+def is_admin():
+    if WINDOWS:
+        try:
+            import ctypes
+            return bool(ctypes.windll.shell32.IsUserAnAdmin())
+        except Exception:
+            return False
+    return os.geteuid() == 0
+
+
+_PREAD_LOCK = threading.Lock()
+
+
+def pread(fd, n, off):
+    """Lecture à une position donnée. Sous Windows, les disques bruts exigent
+    des lectures alignées sur le secteur : on aligne puis on découpe."""
+    if not WINDOWS:
+        return os.pread(fd, n, off)
+    a = off - (off % SECTOR)
+    end = off + n
+    b = end + (-end % SECTOR)
+    with _PREAD_LOCK:
+        os.lseek(fd, a, os.SEEK_SET)
+        data = os.read(fd, b - a)
+    return data[off - a:off - a + n]
+
+
+def device_size(fd, path):
+    """Taille d'un disque, d'une partition ou d'une image."""
+    if WINDOWS and path.startswith("\\\\.\\"):
+        import ctypes
+        import msvcrt
+        from ctypes import wintypes
+        handle = msvcrt.get_osfhandle(fd)
+        length = ctypes.c_longlong(0)
+        ret = wintypes.DWORD(0)
+        IOCTL_DISK_GET_LENGTH_INFO = 0x7405C
+        ok = ctypes.windll.kernel32.DeviceIoControl(
+            wintypes.HANDLE(handle), IOCTL_DISK_GET_LENGTH_INFO, None, 0,
+            ctypes.byref(length), ctypes.sizeof(length), ctypes.byref(ret), None)
+        if ok:
+            return length.value
+    return os.lseek(fd, 0, os.SEEK_END)
+
+
+def powershell_json(cmd):
+    try:
+        r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command",
+                            cmd + " | ConvertTo-Json -Compress"],
+                           capture_output=True, text=True, timeout=30,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        data = json.loads(r.stdout or "[]")
+        return data if isinstance(data, list) else [data]
+    except Exception:
+        return []
+
+
+def list_devices_windows():
+    devs = []
+    disks = powershell_json("Get-CimInstance Win32_DiskDrive | Select-Object Index,Model,Size,InterfaceType,MediaType")
+    parts = powershell_json("Get-Partition | Where-Object DriveLetter | Select-Object DiskNumber,DriveLetter,Size")
+    vols = {str(v.get("DriveLetter")): v for v in powershell_json(
+        "Get-Volume | Where-Object DriveLetter | Select-Object DriveLetter,FileSystemLabel,FileSystem")}
+    sysdrive = (os.environ.get("SystemDrive") or "C:")[0].upper()
+    for d in sorted(disks, key=lambda x: x.get("Index", 0)):
+        idx = d.get("Index")
+        iface = (d.get("InterfaceType") or "").lower()
+        devs.append({"path": "\\\\.\\PhysicalDrive%s" % idx, "name": "PhysicalDrive%s" % idx, "type": "disk",
+                     "size": int(d.get("Size") or 0), "model": (d.get("Model") or "").strip(),
+                     "fs": "", "label": "", "mount": "", "parent": "",
+                     "removable": "removable" in (d.get("MediaType") or "").lower() or iface == "usb",
+                     "tran": iface})
+        for p in parts:
+            if p.get("DiskNumber") != idx:
+                continue
+            letter = str(p.get("DriveLetter"))
+            v = vols.get(letter, {})
+            devs.append({"path": "\\\\.\\%s:" % letter, "name": letter + ":", "type": "part",
+                         "size": int(p.get("Size") or 0), "model": "", "fs": (v.get("FileSystem") or "").lower(),
+                         "label": (v.get("FileSystemLabel") or "") or (letter + ":"),
+                         "mount": letter + ":\\" + (" (système)" if letter.upper() == sysdrive else ""),
+                         "removable": False, "tran": "", "parent": "PhysicalDrive%s" % idx})
+    return devs
+
+
+def windows_disk_of(path):
+    """Numéro du disque physique qui porte la lettre de lecteur d'un chemin."""
+    drive = os.path.splitdrive(os.path.abspath(path))[0].rstrip(":\\")[-1:]
+    if not drive:
+        return None
+    r = powershell_json("Get-Partition -DriveLetter %s | Select-Object DiskNumber" % drive)
+    return r[0].get("DiskNumber") if r else None
 MAP_CELLS = 2400            # nombre de cases de la mosaïque
 READ_CHUNK = 4 * 1024 * 1024
+SCAN_CHUNK = 16 * 1024 * 1024    # lecture séquentielle par gros blocs (débit maximal)
 
 # États des cases de la mosaïque (priorité croissante)
 C_UNREAD, C_EMPTY, C_DATA = "0", "1", "2"
@@ -77,8 +177,8 @@ class Source:
 
     def __init__(self, path, on_bad=None):
         self.path = path
-        self.fd = os.open(path, os.O_RDONLY | getattr(os, "O_LARGEFILE", 0))
-        self.size = os.lseek(self.fd, 0, os.SEEK_END)
+        self.fd = os.open(path, os.O_RDONLY | getattr(os, "O_LARGEFILE", 0) | getattr(os, "O_BINARY", 0))
+        self.size = device_size(self.fd, path)
         if self.size <= 0:
             raise ValueError("Source vide ou taille inconnue : " + path)
         self.on_bad = on_bad
@@ -86,6 +186,9 @@ class Source:
         self._order = []
         self._lock = threading.Lock()
         self.bad_sectors = 0
+        self.bad_units = set()
+        self.consec_bad = 0
+        self.skip_left = 0
 
     def close(self):
         try:
@@ -93,24 +196,53 @@ class Source:
         except OSError:
             pass
 
+    BAD_UNIT = 64 * 1024
+
+    def _mark_bad(self, k):
+        u = self.BAD_UNIT
+        self.bad_units.add(k)
+        self.bad_sectors += u // SECTOR
+        if self.on_bad:
+            self.on_bad(k * u, u)
+
+    def _is_bad(self, off, n):
+        u = self.BAD_UNIT
+        return any(k in self.bad_units for k in range(off // u, (off + n - 1) // u + 1))
+
     def _raw(self, off, n):
-        """Lit n octets ; remplace les secteurs illisibles par des zéros."""
-        try:
-            return os.pread(self.fd, n, off)
-        except OSError:
-            pass
+        """Lit n octets. Zone illisible : remplie de zéros et mémorisée, sans
+        relire secteur par secteur (sur un disque abîmé, chaque secteur
+        défectueux peut bloquer plusieurs secondes)."""
+        if not self.bad_units or not self._is_bad(off, n):
+            try:
+                b = pread(self.fd, n, off)
+                return b if len(b) == n else b + bytes(n - len(b))
+            except OSError:
+                pass
+        u = self.BAD_UNIT
         out = bytearray()
         pos, end = off, off + n
         while pos < end:
-            step = min(SECTOR - (pos % SECTOR), end - pos)
-            try:
-                b = os.pread(self.fd, step, pos)
-            except OSError:
-                b = b""
-                self.bad_sectors += 1
-                if self.on_bad:
-                    self.on_bad(pos, step)
-            if len(b) < step:
+            k = pos // u
+            step = min((k + 1) * u, end) - pos
+            b = None
+            if k not in self.bad_units:
+                if self.skip_left > 0:
+                    # échecs en série : on saute sans lire (méthode ddrescue)
+                    self.skip_left -= 1
+                    self._mark_bad(k)
+                else:
+                    try:
+                        b = pread(self.fd, step, pos)
+                        self.consec_bad = 0
+                    except OSError:
+                        self._mark_bad(k)
+                        self.consec_bad += 1
+                        if self.consec_bad >= 3:
+                            self.skip_left = min(2 ** (self.consec_bad - 2), 1024)
+            if not b:
+                b = bytes(step)
+            elif len(b) < step:
                 b = b + bytes(step - len(b))
             out += b
             pos += step
@@ -232,10 +364,11 @@ class GapSearch:
     On essaie chaque point de coupure possible et chaque saut possible ;
     une vérification forte (CRC, décompression, structure) valide le recollage."""
 
-    def __init__(self, cluster=4096, max_gap_clusters=1024, max_frags=8):
+    def __init__(self, cluster=4096, max_gap_clusters=1024, max_frags=8, budget=2.0):
         self.cs = cluster
         self.max_gap = max_gap_clusters
         self.max_frags = max_frags
+        self.budget = budget        # secondes maximum par recherche
 
     def boundaries(self, lay, p_from, p_to):
         start = lay.open_start()
@@ -251,9 +384,10 @@ class GapSearch:
         """check(layout_essai) -> bool. Renvoie la layout recollée ou None."""
         if len(lay.frags) >= self.max_frags:
             return None
+        deadline = time.monotonic() + self.budget
         for c in reversed(self.boundaries(lay, p_from, p_to)):
             for g in range(1, self.max_gap + 1):
-                if stop and stop():
+                if (stop and stop()) or (g & 31 == 0 and time.monotonic() > deadline):
                     return None
                 resume = c + g * self.cs
                 if resume >= lay.src.size:
@@ -520,7 +654,7 @@ class Carvers:
         s = self.src
         if s.read(off, 5) != b"%PDF-":
             return None
-        p, limit, end = off, off + 512 * 1024 * 1024, None
+        p, limit, end = off, off + 96 * 1024 * 1024, None
         while p < limit:
             blk = s.read(p, 1024 * 1024)
             if not blk:
@@ -658,6 +792,7 @@ class Carvers:
                     err_lo = data_at + pos
                     break
         p_err = lay.phys(min(err_lo, data_at + csize))
+        deadline = time.monotonic() + self.gaps.budget
         p_start = lay.phys(data_at)
         for c in reversed(self.gaps.boundaries(lay, max(p_start + 1, p_err - 64 * cs), p_err)):
             lc = lay.logical_of_phys_in_last(c)
@@ -670,7 +805,7 @@ class Carvers:
             c0, got0 = zlib.crc32(out), len(out)
             rest = csize - (lc - data_at)
             for g in range(1, self.gaps.max_gap + 1):
-                if self.stop and self.stop():
+                if (self.stop and self.stop()) or (g & 31 == 0 and time.monotonic() > deadline):
                     return None
                 resume = c + g * cs
                 if resume + rest > self.src.size:
@@ -847,6 +982,8 @@ def tsk_available():
 
 
 def tsk_install_hint():
+    if WINDOWS:
+        return "téléchargez The Sleuth Kit pour Windows (sleuthkit.org) et ajoutez son dossier bin au PATH"
     ids = ""
     try:
         for line in open("/etc/os-release", encoding="utf-8"):
@@ -904,7 +1041,9 @@ def _safe_rel(path):
         p = p.replace("\x00", "").strip()
         if p in ("", ".", ".."):
             continue
-        p = re.sub(r'[<>:"|?*\x01-\x1f]', "_", p)[:200]
+        p = re.sub(r'[<>:"|?*\x01-\x1f]', "_", p)[:200].rstrip(" .") or "_"
+        if p.split(".")[0].upper() in ("CON", "PRN", "AUX", "NUL") or re.match(r"^(COM|LPT)\d$", p.split(".")[0].upper()):
+            p = "_" + p
         parts.append(p)
     return os.path.join(*parts) if parts else "sans_nom"
 
@@ -1045,6 +1184,21 @@ def _sys_disks(sysdir):
 
 
 def same_physical_device(source_path, out_dir):
+    if WINDOWS:
+        sp = source_path.upper()
+        m = re.match(r"^\\\\\.\\PHYSICALDRIVE(\d+)$", sp)
+        if not m and not re.match(r"^\\\\\.\\[A-Z]:$", sp):
+            return False                      # image disque : pas de risque
+        out_disk = windows_disk_of(out_dir)
+        if m:
+            return out_disk is not None and int(m.group(1)) == int(out_disk)
+        m = re.match(r"^\\\\\.\\([A-Z]):$", sp)
+        if m:
+            if os.path.splitdrive(os.path.abspath(out_dir))[0].upper().startswith(m.group(1)):
+                return True
+            src_disk = windows_disk_of(m.group(1) + ":\\")
+            return src_disk is not None and src_disk == out_disk
+        return False
     try:
         st = os.stat(source_path)
         if not os.path.exists(out_dir):
@@ -1066,6 +1220,8 @@ def same_physical_device(source_path, out_dir):
 
 
 def list_devices():
+    if WINDOWS:
+        return list_devices_windows()
     devs = []
     try:
         raw = subprocess.run(["lsblk", "-J", "-b", "-o",
@@ -1176,7 +1332,7 @@ def human(n):
 
 
 def chown_tree(path, owner):
-    if not owner:
+    if not owner or not hasattr(os, "chown"):
         return
     uid, gid = owner
     for root, dirs, files in os.walk(path):
@@ -1201,7 +1357,7 @@ def clone_image(src_path, img_path, job):
         while pos < src.size and not job.stop_flag:
             n = min(chunk, src.size - pos)
             try:
-                b = os.pread(src.fd, n, pos)
+                b = pread(src.fd, n, pos)
                 if len(b) < n:
                     raise OSError("lecture courte")
                 out.seek(pos)
@@ -1215,20 +1371,27 @@ def clone_image(src_path, img_path, job):
                 pos += skip
                 skip = min(skip * 2, 64 * 1024 * 1024)
             job.pos = pos
-        # 2e passage : secteur par secteur dans les zones abîmées
+        # 2e passage (« trimming » façon ddrescue) : on grignote chaque zone abîmée
+        # par ses deux bords, secteur par secteur, et on abandonne au bout de
+        # 8 échecs consécutifs ou du budget de temps. Le cœur des zones mortes
+        # n'est jamais relu (c'est ce qui prenait des heures).
         if bad_zones and not job.stop_flag:
-            job.say("%d zone(s) abîmée(s) : nouvelle tentative secteur par secteur" % len(bad_zones))
+            job.say("%d zone(s) abîmée(s) : récupération des bords (max. 5 min)" % len(bad_zones))
+            deadline = time.monotonic() + 300
             for a, ln in bad_zones:
-                p = a
-                while p < a + ln and not job.stop_flag:
-                    try:
-                        b = os.pread(src.fd, SECTOR, p)
-                        out.seek(p)
-                        out.write(b)
-                        job.cells[int(p * MAP_CELLS // src.size)] = C_DATA
-                    except OSError:
-                        job.bad += 1
-                    p += SECTOR
+                for direction in (1, -1):
+                    p = a if direction == 1 else a + ln - SECTOR
+                    fails = 0
+                    while a <= p < a + ln and fails < 8 and not job.stop_flag and time.monotonic() < deadline:
+                        try:
+                            b = pread(src.fd, SECTOR, p)
+                            out.seek(p)
+                            out.write(b)
+                            fails = 0
+                        except OSError:
+                            fails += 1
+                            job.bad += 1
+                        p += direction * SECTOR
     src.close()
     return bad_zones
 
@@ -1303,34 +1466,47 @@ def run_scan(cfg, job):
             by2.setdefault(key, []).append((prefix, rel, fam))
         job.say("Analyse de %s (%s) — %d formats recherchés" % (source, human(src.size), len(families)))
         skip_until = 0
-        overlap = 64
         pos = 0
         seen = set()
+        # Lecture anticipée : le bloc suivant est lu pendant l'analyse du bloc courant
+        from concurrent.futures import ThreadPoolExecutor
+        pool = ThreadPoolExecutor(max_workers=1)
+
+        def fetch(p):
+            return src._raw(p, min(SCAN_CHUNK, src.size - p)) if p < src.size else b""
+
+        fut = pool.submit(fetch, 0)
         while pos < src.size and not job.stop_flag:
-            blk = src.read(pos, READ_CHUNK + overlap)
-            if not blk:
+            cur = fut.result()
+            if not cur:
                 break
-            main = min(READ_CHUNK, len(blk))
-            job.mark(pos, main, C_EMPTY if not blk[:main].strip(b"\0") else C_DATA)
+            main = len(cur)
+            fut = pool.submit(fetch, pos + main)
+            if not cur.strip(b"\0"):          # zone vide : rien à chercher
+                job.mark(pos, main, C_EMPTY)
+                pos += main
+                job.pos = pos
+                continue
+            job.mark(pos, main, C_DATA)
             cands = []
             if aligned:
-                step = SECTOR
-                start = (-pos) % step
-                for i in range(start, main, step):
-                    two = blk[i:i + 2]
-                    for prefix, rel, fam in by2.get(two, ()):
+                blk = cur
+                start = (-pos) % SECTOR
+                for i in range(start, main, SECTOR):
+                    for prefix, rel, fam in by2.get(blk[i:i + 2], ()):
                         if blk.startswith(prefix, i):
                             cands.append((pos + i, fam))
                     for prefix, rel, fam in by2.get(None, ()):
                         if blk.startswith(prefix, i + rel):
                             cands.append((pos + i, fam))
             else:
+                blk = cur + src._raw(pos + main, 64) if pos + main < src.size else cur
                 for prefix, rel, fam in sigs:
-                    i = blk.find(prefix, 0, main + len(prefix))
+                    i = blk.find(prefix)
                     while i != -1 and i < main + rel:
                         if i - rel >= 0:
                             cands.append((pos + i - rel, fam))
-                        i = blk.find(prefix, i + 1, main + len(prefix))
+                        i = blk.find(prefix, i + 1)
                 cands.sort()
             for off, fam in cands:
                 if job.stop_flag:
@@ -1354,6 +1530,7 @@ def run_scan(cfg, job):
                 seen = set(x for x in seen if x >= pos)
             pos += main
             job.pos = pos
+        pool.shutdown(wait=True)
         job.bad = max(job.bad, src.bad_sectors)
         src.close()
         write_report(out_root, job)
@@ -1495,7 +1672,7 @@ class Handler(BaseHTTPRequestHandler):
                               {"Content-Security-Policy": "default-src 'self'; img-src 'self' blob:; font-src 'self'; "
                                "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"})
         if u.path == "/api/info":
-            return self._send(200, {"version": VERSION, "root": os.geteuid() == 0,
+            return self._send(200, {"version": VERSION, "root": is_admin(), "windows": WINDOWS,
                                     "out": DEFAULT_OUT, "families": FAMILIES,
                                     "tsk": tsk_available(), "tsk_hint": tsk_install_hint()})
         if u.path == "/api/devices":
@@ -1526,6 +1703,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(400, {"erreur": "requête invalide"})
         if u.path == "/api/start":
             return self._send(*start_job(body))
+        if u.path == "/api/quit":
+            JOB.stop_flag = True
+            threading.Thread(target=lambda: (time.sleep(0.5), os._exit(0)), daemon=True).start()
+            return self._send(200, {"ok": True})
         if u.path == "/api/stop":
             JOB.stop_flag = True
             JOB.say("Arrêt demandé…")
@@ -1555,7 +1736,7 @@ def start_job(cfg):
     JOB.running = True
     JOB.source = src
     cfg = dict(cfg, source=src, out=out, owner=OWNER)
-    if OWNER:
+    if OWNER and hasattr(os, "chown"):
         try:
             os.chown(out, *OWNER)
         except OSError:
@@ -1575,7 +1756,7 @@ def free_port():
 def open_browser(url):
     """Ouvre le navigateur en tant qu'utilisateur normal (jamais en root)."""
     try:
-        if os.geteuid() != 0:
+        if WINDOWS or not is_admin():
             webbrowser.open(url)
             return
     except Exception:
@@ -1643,6 +1824,21 @@ def cli(args):
 #  Lancement : élévation des droits puis ouverture du navigateur en utilisateur
 # ═════════════════════════════════════════════════════════════════════════════
 
+def relaunch_as_admin_windows(argv):
+    """Windows : redemande Mosaïk avec les droits administrateur (fenêtre UAC)."""
+    import ctypes
+    me = os.path.realpath(__file__)
+    py = sys.executable
+    if py.lower().endswith("python.exe") and os.path.exists(py[:-10] + "pythonw.exe"):
+        py = py[:-10] + "pythonw.exe"
+    params = " ".join('"%s"' % a.replace('"', '') for a in [me] + argv)
+    rc = ctypes.windll.shell32.ShellExecuteW(None, "runas", py, params, None, 1)
+    if rc <= 32:
+        print("Droits administrateur refusés. Pour analyser une image disque : mosaik --sans-root")
+        return 1
+    return 0
+
+
 def relaunch_as_root(argv):
     """L'utilisateur lance Mosaïk normalement ; on demande le mot de passe
     administrateur (pkexec en graphique, sinon sudo), puis on ouvre le
@@ -1704,12 +1900,16 @@ def main():
     ap.add_argument("--version", action="version", version="%s %s" % (APP, VERSION))
     args = ap.parse_args()
 
+    if sys.stdout is None:                     # pythonw (Windows) : pas de console
+        sys.stdout = sys.stderr = open(os.devnull, "w")
     if sys.version_info < (3, 8):
         sys.exit("Python 3.8 ou plus récent est nécessaire.")
     if args.cli:
         return cli(args)
-    if os.geteuid() != 0 and not args.sans_root:
+    if not is_admin() and not args.sans_root:
         passthru = [a for a in sys.argv[1:] if a not in ("--sans-root",)]
+        if WINDOWS:
+            sys.exit(relaunch_as_admin_windows(passthru))
         sys.exit(relaunch_as_root(passthru))
     serve(args)
 
