@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Mosaïk
+GenericName=Récupération de fichiers
+Comment=Récupérer des fichiers sur un disque endommagé ou fragmenté
+Exec=mosaik
+Icon=mosaik
+Terminal=false
+Categories=System;Utility;
+Keywords=récupération;recovery;disque;photo;undelete;
