@@ -31,9 +31,9 @@ import webbrowser
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 APP = "Mosaïk"
-HERE = os.path.dirname(os.path.realpath(__file__))
+HERE = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.realpath(__file__))  # exe PyInstaller
 
 SECTOR = 512
 WINDOWS = os.name == "nt"
@@ -1920,8 +1920,13 @@ def main():
     ap.add_argument("--version", action="version", version="%s %s" % (APP, VERSION))
     args = ap.parse_args()
 
-    if sys.stdout is None:                     # pythonw (Windows) : pas de console
-        sys.stdout = sys.stderr = open(os.devnull, "w")
+    if sys.stdout is None:                     # Mosaik.exe / pythonw : pas de console → journal
+        logdir = os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~"), "Mosaik")
+        try:
+            os.makedirs(logdir, exist_ok=True)
+            sys.stdout = sys.stderr = open(os.path.join(logdir, "mosaik.log"), "w", encoding="utf-8", buffering=1)
+        except OSError:
+            sys.stdout = sys.stderr = open(os.devnull, "w")
     elif hasattr(sys.stdout, "reconfigure"):   # console Windows (cp1252) : pas de plantage sur les accents
         try:
             sys.stdout.reconfigure(errors="replace")

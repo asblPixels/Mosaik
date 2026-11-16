@@ -1,0 +1,67 @@
+name: Windows .exe
+
+on:
+  push:
+    branches: [main]
+    paths: ["mosaik.py", "ui.html", "assets/**", ".github/workflows/release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Version
+        id: v
+        shell: bash
+        run: echo "version=$(python -c 'import re;print(re.search(r"VERSION = \"(.+?)\"", open("mosaik.py",encoding="utf-8").read()).group(1))')" >> "$GITHUB_OUTPUT"
+      - name: Construire Mosaik.exe (PyInstaller)
+        shell: bash
+        run: |
+          pip install pyinstaller pillow
+          pyinstaller --onefile --windowed --uac-admin --name Mosaik \
+            --icon assets/mosaik.ico \
+            --add-data "ui.html;." \
+            --add-data "assets/mosaik-icon.svg;assets" \
+            --add-data "assets/fonts;assets/fonts" \
+            mosaik.py
+          ls -la dist
+      - name: Tester Mosaik.exe (récupération, fichiers fragmentés)
+        shell: bash
+        run: |
+          MOSAIK_CMD="$PWD/dist/Mosaik.exe" python tests/test_recuperation.py
+      - name: Tester l'interface (serveur local)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist\Mosaik.exe -ArgumentList "--no-browser","--port","18765" -PassThru
+          Start-Sleep -Seconds 8
+          $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:18765/logo.svg
+          $f = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:18765/fonts/Poppins-Bold.woff2
+          Write-Host "logo: $($r.StatusCode)  police: $($f.StatusCode)"
+          Get-Content "$env:LOCALAPPDATA\Mosaik\mosaik.log" -ErrorAction SilentlyContinue
+          Stop-Process -Id $p.Id -Force
+          if ($r.StatusCode -ne 200 -or $f.StatusCode -ne 200) { exit 1 }
+      - name: Publier la release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="v${{ steps.v.outputs.version }}"
+          NOTES=$(python - <<'PY'
+          import re
+          s = open("CHANGELOG.md", encoding="utf-8").read()
+          m = re.search(r"\n## \[[0-9][^\n]*\n(.*?)(?=\n## \[|\Z)", s, re.S)
+          print((m.group(1).strip() if m else "") + "\n\n**Windows** : téléchargez `Mosaik.exe` et double-cliquez (Windows demande l'autorisation administrateur, nécessaire pour lire un disque).\n**En ligne** : https://asblpixels.github.io/Mosaik/")
+          PY
+          )
+          if gh release view "$V" >/dev/null 2>&1; then
+            gh release upload "$V" dist/Mosaik.exe --clobber
+          else
+            gh release create "$V" dist/Mosaik.exe --title "Mosaïk ${{ steps.v.outputs.version }}" --notes "$NOTES" --latest
+          fi

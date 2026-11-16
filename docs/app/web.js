@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const FAMILIES = {"jpg": "Photos JPEG", "png": "Images PNG", "gif": "Images GIF", "bmp": "Images BMP", "pdf": "PDF", "zip": "Office / LibreOffice / ZIP", "riff": "WAV / AVI / WEBP", "mp4": "Vidéos MP4 / MOV / M4A / HEIC", "mp3": "Musique MP3", "sqlite": "Bases SQLite"};
-  const VERSION = "2.1.0";
+  const VERSION = "2.2.0";
   const now = () => new Date().toTimeString().slice(0, 8);
   let worker = null, files = [], extras = [];
   let st = { phase: "attente", running: false, size: 0, pos: 0, speed: 0, eta: 0, elapsed: 0,

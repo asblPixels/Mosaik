@@ -73,7 +73,9 @@ put(d[cut:], CS * 600 + cut + 13 * CS)
 tmp = tempfile.mkdtemp()
 img = os.path.join(tmp, "disque.img"); open(img, "wb").write(disk)
 out = os.path.join(tmp, "sortie")
-r = subprocess.run([sys.executable, "-X", "faulthandler", os.path.join(ROOT, "mosaik.py"), "--cli", img, "--sortie", out],
+cmd = os.environ.get("MOSAIK_CMD")   # ex. chemin de Mosaik.exe (test de l'exécutable Windows)
+cmd = [cmd] if cmd else [sys.executable, "-X", "faulthandler", os.path.join(ROOT, "mosaik.py")]
+r = subprocess.run(cmd + ["--cli", img, "--sortie", out],
                    capture_output=True, text=True, timeout=600)
 print(r.stdout[-1500:], r.stderr[-1500:])
 

@@ -9,7 +9,7 @@
 **Un récupérateur de données visuel, simple et libre, pour Linux (toutes distributions) et Windows**
 
 [![Licence : MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.0-26EFC5.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.2.0-26EFC5.svg)](CHANGELOG.md)
 [![En ligne](https://img.shields.io/badge/en%20ligne-sans%20installation-26EFC5.svg)](https://asblpixels.github.io/Mosaik/)
 [![Plateforme](https://img.shields.io/badge/plateforme-Linux%20%26%20Windows-blue.svg)](#️-systèmes-compatibles)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
@@ -24,7 +24,7 @@
 
 <br>
 
-### [▶ Utiliser Mosaïk en ligne, sans rien installer](https://asblpixels.github.io/Mosaik/)
+### [▶ Utiliser Mosaïk en ligne, sans rien installer](https://asblpixels.github.io/Mosaik/) · [⬇ Télécharger pour Windows (.exe)](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)
 
 <br>
 
@@ -184,11 +184,17 @@ Le script :
 
 ### 🪟 Windows 10 / 11
 
-1. **Téléchargez** le ZIP : bouton **Code → Download ZIP**, puis décompressez-le (sur le Bureau par exemple).
-2. **Double-cliquez** sur `scripts\install-windows.bat`.
-3. C'est tout : **Mosaïk** apparaît dans le menu Démarrer et sur le Bureau.
+1. **[Téléchargez Mosaik.exe](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)** (un seul fichier, rien d'autre à installer).
+2. **Double-cliquez** dessus et acceptez l'autorisation administrateur : elle est nécessaire pour lire un disque.
+3. Mosaïk s'ouvre dans votre navigateur.
 
-L'installateur trouve Python ou l'installe automatiquement (winget). Au lancement, Windows demande l'autorisation administrateur : elle est nécessaire pour lire un disque.
+L'exécutable est compilé et testé automatiquement sur une vraie machine Windows avant chaque publication ([Releases](https://github.com/asblPixels/Mosaik/releases)).
+En cas de souci, le journal se trouve dans `%LOCALAPPDATA%\Mosaik\mosaik.log`.
+
+<details><summary>Autre méthode : installateur avec Python</summary>
+
+Téléchargez le ZIP (**Code → Download ZIP**), décompressez-le, puis double-cliquez sur `scripts\install-windows.bat` : il installe Python si besoin (winget) et crée les raccourcis menu Démarrer et Bureau.
+</details>
 
 > Facultatif : pour les noms d'origine, installez [The Sleuth Kit pour Windows](https://www.sleuthkit.org/sleuthkit/download.php) et ajoutez son dossier `bin` au PATH.
 

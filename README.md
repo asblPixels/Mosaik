@@ -9,7 +9,7 @@
 **A simple, visual, open-source data recovery tool for Linux (any distribution) and Windows**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.0-26EFC5.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.2.0-26EFC5.svg)](CHANGELOG.md)
 [![Online](https://img.shields.io/badge/online-no%20install-26EFC5.svg)](https://asblpixels.github.io/Mosaik/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%26%20Windows-blue.svg)](#️-supported-systems)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
@@ -24,7 +24,7 @@
 
 <br>
 
-### [▶ Use Mosaïk online — nothing to install](https://asblpixels.github.io/Mosaik/)
+### [▶ Use Mosaïk online — nothing to install](https://asblpixels.github.io/Mosaik/) · [⬇ Download for Windows (.exe)](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)
 
 <br>
 
@@ -182,11 +182,17 @@ The script:
 
 ### 🪟 Windows 10 / 11
 
-1. **Download** the ZIP (**Code → Download ZIP**) and extract it (e.g. on your Desktop).
-2. **Double-click** `scripts\install-windows.bat`.
-3. That's it: **Mosaïk** appears in the Start menu and on the Desktop.
+1. **[Download Mosaik.exe](https://github.com/asblPixels/Mosaik/releases/latest/download/Mosaik.exe)** (a single file, nothing else to install).
+2. **Double-click** it and accept the administrator prompt: it is required to read a disk.
+3. Mosaïk opens in your browser.
 
-The installer finds Python or installs it automatically (winget). On launch, Windows asks for administrator permission: it is required to read a disk.
+The executable is built and tested automatically on a real Windows machine before each release ([Releases](https://github.com/asblPixels/Mosaik/releases)).
+If something goes wrong, the log is in `%LOCALAPPDATA%\Mosaik\mosaik.log`.
+
+<details><summary>Alternative: installer with Python</summary>
+
+Download the ZIP (**Code → Download ZIP**), extract it, then double-click `scripts\install-windows.bat`: it installs Python if needed (winget) and creates Start menu and Desktop shortcuts.
+</details>
 
 > Optional: for original file names, install [The Sleuth Kit for Windows](https://www.sleuthkit.org/sleuthkit/download.php) and add its `bin` folder to the PATH.
 

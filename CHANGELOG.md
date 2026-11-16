@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-17 — Windows: Mosaik.exe
+
+### Added
+- **`Mosaik.exe`**: single executable for Windows 10/11, nothing else to install (Python included). Asks for administrator rights at launch (needed to read a disk), embedded icon and interface.
+- Automatic build on a real Windows machine (GitHub Actions + PyInstaller), tested before publication (fragmented-file recovery, local interface), then attached to the GitHub release.
+- Log file `%LOCALAPPDATA%\Mosaik\mosaik.log` when running without a console, to diagnose problems.
+
+### Changed
+- The `.bat` / `.ps1` installer is kept as an alternative; `Mosaik.exe` is now the recommended way on Windows.
+
 ## [2.1.0] - 2026-11-16 — Online version
 
 ### Added
